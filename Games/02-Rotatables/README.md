@@ -1,7 +1,7 @@
 # Rotatables
 
 Rotating **A** and rotating **B** are neighbors. Each has its own rotation and
-skin; the selected neighbor is framed in its skin's accent color.
+skin; the selected neighbor's skin selector is framed in its accent color.
 
 ![Rotatables showing Aurora A and Ember B](Docs/screenshot.png)
 
@@ -110,15 +110,15 @@ window, and the fragment shader evaluates:
 - a per-skin fill function,
 - a per-skin edge function,
 - antialiasing from `fwidth`, and
-- the selection frames and skin pips.
+- a compact selector around each row of skin pips.
 
 `skinFill` and `skinEdge` are separate functions selected by an integer uniform.
 Adding a skin means extending the enum, appending its functions, and adding its
 pip color; the renderer and game state need no changes beyond that.
 
 The two panels are laid out from the current aspect ratio each frame. Glyphs
-rotate around their own centers while the selection frames and pips stay
-upright, which keeps the interface readable at every rotation angle.
+rotate around their own centers while the selectors and pips stay upright,
+which keeps the interface readable at every rotation angle.
 
 ### Include/format/build checks are local
 
@@ -183,7 +183,7 @@ for the full tooling setup.
    generated during the build.
 5. The fragment shader chooses the left or right panel, rotates that glyph's
    coordinates, evaluates the stroke SDF and the active skin, then adds the
-   stable panel frame and five skin pips.
+   compact skin selector and five pips.
 
 ## Extending the game
 

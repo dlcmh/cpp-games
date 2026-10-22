@@ -70,11 +70,16 @@ float3 shadeCharacter(float2 uv, float aspect, float3 color)
     color = lerp(color, ink, fill);
     color += rim * float3(0.85, 1.0, 1.0) * 0.26;
 
-    // Selection frame and skin pips. Both are evaluated in unrotated cell
-    // space so the UI stays stable while the glyph spins.
-    float frameDistance = sdRoundBox(cellCentered, float2(aspect * 0.25 - 0.06, 0.93), 0.06);
-    float frameLine = 1.0 - smoothstep(0.0015, 0.0045, abs(frameDistance));
-    color += frameLine * accent * (isSelected ? 0.38 : 0.07);
+    // The selector only encloses the row of skin pips. It stays in unrotated
+    // cell space so the UI is stable while the glyph spins.
+    float2 selectorCenter = cellCentered - float2(0.0, -0.84);
+    float selectorDistance = sdRoundBox(selectorCenter, float2(0.295, 0.052), 0.048);
+    float selectorLine = 1.0 - smoothstep(0.0015, 0.0045, abs(selectorDistance));
+    color += selectorLine * accent * (isSelected ? 0.50 : 0.09);
+
+    float selectorGlow =
+        1.0 - smoothstep(0.0, 0.08, max(selectorDistance, 0.0));
+    color += accent * selectorGlow * (isSelected ? 0.08 : 0.015);
 
     for (int pip = 0; pip < 5; ++pip) {
         float2 pipPoint = cellCentered - float2(float(pip - 2) * 0.105, -0.84);
