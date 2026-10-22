@@ -1,17 +1,15 @@
 #!/usr/bin/env bash
-# Format, clean up includes, and compile-check the game locally.
+# Format, clean up includes, and compile-check every game locally.
 #
 # Default mode checks all C++ sources without modifying them. The pre-commit
-# hook calls `--staged --fix`, which formats and fixes only the staged files,
+# hook calls `--staged --fix`, which formats and fixes only the staged games,
 # re-stages the result, then verifies everything before allowing the commit.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PROJECT="${ROOT}/Games/01-Barebones"
-PROJECT_REL="Games/01-Barebones"
 DEPS_DIR="${CPP_GAMES_DEPS_DIR:-${HOME}/Library/Caches/cpp-games/deps}"
 TOOLS_DIR="${CPP_GAMES_TOOLS_DIR:-${HOME}/Library/Caches/cpp-games/tools}"
-BUILD_DIR="${BAREBONES_CHECK_BUILD_DIR:-/tmp/cpp-games-barebones-check}"
+CHECK_ROOT="${CPP_GAMES_CHECK_BUILD_ROOT:-/tmp/cpp-games-check}"
 
 MODE="all"
 FIX=0
@@ -21,16 +19,16 @@ usage() {
 Usage: Tools/check.sh [options]
 
 Options:
-  --all       Check every C++ source in the game (default).
+  --all       Check all files in every game (default).
   --staged    Check only files staged for the next commit.
   --fix       Apply clang-format and include-cleaner fixes, then re-stage
               files when running with --staged.
   -h, --help  Show this help.
 
 Environment:
-  CPP_GAMES_DEPS_DIR        Build dependency cache (default: ~/Library/Caches/cpp-games/deps)
-  CPP_GAMES_TOOLS_DIR       clang-tidy cache (default: ~/Library/Caches/cpp-games/tools)
-  BAREBONES_CHECK_BUILD_DIR Check build directory (default: /tmp/cpp-games-barebones-check)
+  CPP_GAMES_DEPS_DIR         Build dependency cache (default: ~/Library/Caches/cpp-games/deps)
+  CPP_GAMES_TOOLS_DIR        clang-tidy cache (default: ~/Library/Caches/cpp-games/tools)
+  CPP_GAMES_CHECK_BUILD_ROOT Check build root (default: /tmp/cpp-games-check)
 EOF
 }
 
@@ -90,29 +88,69 @@ is_tidy_file() {
     esac
 }
 
-# Anything that can affect compilation, including the shader and build files.
+# Anything that can affect compilation, including shaders and build files.
 is_build_input() {
     is_cxx_file "$1" && return 0
     case "$1" in
-        *.slang|CMakeLists.txt) return 0 ;;
+        *.slang|CMakeLists.txt|*/CMakeLists.txt) return 0 ;;
         *) return 1 ;;
     esac
 }
+
+PROJECTS=()
+while IFS= read -r cmake_file; do
+    [[ -n "${cmake_file}" ]] && PROJECTS+=("$(dirname "${cmake_file}")")
+done < <(find "${ROOT}/Games" -mindepth 2 -maxdepth 2 -name CMakeLists.txt -print | sort)
+
+if [[ "${#PROJECTS[@]}" -eq 0 ]]; then
+    echo "[check] No games with CMakeLists.txt found."
+    exit 0
+fi
 
 CANDIDATES=()
 if [[ "${MODE}" == "staged" ]]; then
     while IFS= read -r path; do
         [[ -n "${path}" ]] && CANDIDATES+=("${path}")
-    done < <(git -C "${ROOT}" diff --cached --name-only --diff-filter=ACMR -- "${PROJECT_REL}")
+    done < <(git -C "${ROOT}" diff --cached --name-only --diff-filter=ACMR -- Games)
 else
     while IFS= read -r path; do
         [[ -n "${path}" ]] && CANDIDATES+=("${path}")
-    done < <(git -C "${ROOT}" ls-files -- "${PROJECT_REL}")
+    done < <(git -C "${ROOT}" ls-files -- Games)
 fi
 
 CXX_FILES=()
 TIDY_FILES=()
-BUILD_NEEDED=0
+BUILD_PROJECTS=()
+
+if [[ "${MODE}" == "all" ]]; then
+    BUILD_PROJECTS=("${PROJECTS[@]}")
+else
+    for project in "${PROJECTS[@]}"; do
+        project_relative="${project#"${ROOT}/"}"
+        project_needs_build=0
+        if [[ "${#CANDIDATES[@]}" -gt 0 ]]; then
+            for relative in "${CANDIDATES[@]}"; do
+                case "${relative}" in
+                    "${project_relative}"/*)
+                        if is_build_input "${relative}"; then
+                            project_needs_build=1
+                            break
+                        fi
+                        ;;
+                esac
+            done
+        fi
+        if [[ "${project_needs_build}" -eq 1 ]]; then
+            BUILD_PROJECTS+=("${project}")
+        fi
+    done
+fi
+
+if [[ "${MODE}" == "staged" ]] && [[ "${#BUILD_PROJECTS[@]}" -eq 0 ]]; then
+    echo "[check] No source or build changes staged; skipping."
+    exit 0
+fi
+
 if [[ "${#CANDIDATES[@]}" -gt 0 ]]; then
     for relative in "${CANDIDATES[@]}"; do
         absolute="${ROOT}/${relative}"
@@ -123,20 +161,7 @@ if [[ "${#CANDIDATES[@]}" -gt 0 ]]; then
         if is_tidy_file "${relative}"; then
             TIDY_FILES+=("${absolute}")
         fi
-        if is_build_input "${relative}"; then
-            BUILD_NEEDED=1
-        fi
     done
-fi
-
-if [[ "${MODE}" == "staged" ]] && [[ "${BUILD_NEEDED}" -eq 0 ]]; then
-    echo "[check] No source or build changes staged; skipping."
-    exit 0
-fi
-
-if [[ "${BUILD_NEEDED}" -eq 0 ]]; then
-    echo "[check] No source or build changes to check."
-    exit 0
 fi
 
 if [[ "${FIX}" -eq 1 ]] && [[ "${MODE}" == "staged" ]] && [[ "${#CXX_FILES[@]}" -gt 0 ]]; then
@@ -150,16 +175,29 @@ if [[ "${FIX}" -eq 1 ]] && [[ "${MODE}" == "staged" ]] && [[ "${#CXX_FILES[@]}" 
     done
 fi
 
-echo "[check] Building with warnings as errors..."
-"${PROJECT}/ThirdParty/fetch-dependencies.sh" "${DEPS_DIR}" >/dev/null
-cmake \
-    -S "${PROJECT}" \
-    -B "${BUILD_DIR}" \
-    -DCMAKE_BUILD_TYPE=Debug \
-    -DCPP_GAMES_DEPS_DIR="${DEPS_DIR}" \
-    -DBAREBONES_WERROR=ON \
-    >/dev/null
-cmake --build "${BUILD_DIR}" --parallel
+project_build_dir() {
+    printf '%s/%s\n' "${CHECK_ROOT}" "$(basename "$1")"
+}
+
+build_project() {
+    local project="$1"
+    local build_dir
+    build_dir="$(project_build_dir "${project}")"
+    "${project}/ThirdParty/fetch-dependencies.sh" "${DEPS_DIR}" >/dev/null
+    cmake \
+        -S "${project}" \
+        -B "${build_dir}" \
+        -DCMAKE_BUILD_TYPE=Debug \
+        -DCPP_GAMES_DEPS_DIR="${DEPS_DIR}" \
+        -DCPP_GAMES_WERROR=ON \
+        >/dev/null
+    cmake --build "${build_dir}" --parallel
+}
+
+echo "[check] Building ${#BUILD_PROJECTS[@]} game(s) with warnings as errors..."
+for project in "${BUILD_PROJECTS[@]}"; do
+    build_project "${project}"
+done
 
 if [[ "${FIX}" -eq 1 ]]; then
     if [[ "${#CXX_FILES[@]}" -gt 0 ]]; then
@@ -172,12 +210,19 @@ if [[ "${FIX}" -eq 1 ]]; then
         export SDKROOT
         SDKROOT="$(xcrun --show-sdk-path)"
         echo "[check] Cleaning includes..."
-        for file in "${TIDY_FILES[@]}"; do
-            "${TIDY_BIN}" -p "${BUILD_DIR}" "${file}" \
-                --config-file="${ROOT}/.clang-tidy" \
-                --header-filter='^$' \
-                --fix \
-                --quiet
+        for project in "${BUILD_PROJECTS[@]}"; do
+            build_dir="$(project_build_dir "${project}")"
+            for file in "${TIDY_FILES[@]}"; do
+                case "${file}" in
+                    "${project}"/*)
+                        "${TIDY_BIN}" -p "${build_dir}" "${file}" \
+                            --config-file="${ROOT}/.clang-tidy" \
+                            --header-filter='^$' \
+                            --fix \
+                            --quiet
+                        ;;
+                esac
+            done
         done
     fi
 
@@ -187,7 +232,9 @@ if [[ "${FIX}" -eq 1 ]]; then
     fi
 
     echo "[check] Rebuilding after fixes..."
-    cmake --build "${BUILD_DIR}" --parallel
+    for project in "${BUILD_PROJECTS[@]}"; do
+        cmake --build "$(project_build_dir "${project}")" --parallel
+    done
 fi
 
 echo "[check] Verifying formatting..."
@@ -200,12 +247,19 @@ if [[ "${#TIDY_FILES[@]}" -gt 0 ]]; then
     export SDKROOT
     SDKROOT="$(xcrun --show-sdk-path)"
     echo "[check] Verifying include hygiene..."
-    for file in "${TIDY_FILES[@]}"; do
-        "${TIDY_BIN}" -p "${BUILD_DIR}" "${file}" \
-            --config-file="${ROOT}/.clang-tidy" \
-            --header-filter='^$' \
-            --warnings-as-errors='*' \
-            --quiet
+    for project in "${BUILD_PROJECTS[@]}"; do
+        build_dir="$(project_build_dir "${project}")"
+        for file in "${TIDY_FILES[@]}"; do
+            case "${file}" in
+                "${project}"/*)
+                    "${TIDY_BIN}" -p "${build_dir}" "${file}" \
+                        --config-file="${ROOT}/.clang-tidy" \
+                        --header-filter='^$' \
+                        --warnings-as-errors='*' \
+                        --quiet
+                    ;;
+            esac
+        done
     done
 fi
 

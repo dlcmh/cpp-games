@@ -56,9 +56,9 @@ cmake \
 
 cmake --build "${BUILD_DIR}" --parallel
 
-# Keep clangd/Zed/VSCode happy without forcing them to know about /tmp.
+# clangd discovers the nearest compile database automatically.
 if [[ -f "${BUILD_DIR}/compile_commands.json" ]]; then
-    cp "${BUILD_DIR}/compile_commands.json" "${REPO_ROOT}/compile_commands.json"
+    cp "${BUILD_DIR}/compile_commands.json" "${SCRIPT_DIR}/compile_commands.json"
 fi
 
 APP="${BUILD_DIR}/Barebones.app"

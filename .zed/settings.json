@@ -3,10 +3,7 @@
         "clangd": {
             "binary": {
                 "path": "clangd"
-            },
-            "arguments": [
-                "--compile-commands-dir=."
-            ]
+            }
         }
     }
 }
