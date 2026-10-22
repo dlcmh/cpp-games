@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
-DEPS_DIR="${CPP_GAMES_DEPS_DIR:-/tmp/cpp-games-deps}"
+DEPS_DIR="${CPP_GAMES_DEPS_DIR:-${HOME}/Library/Caches/cpp-games/deps}"
 BUILD_DIR="${BAREBONES_BUILD_DIR:-/tmp/cpp-games-barebones-build}"
 BUILD_ONLY=0
 
@@ -19,7 +19,7 @@ Options:
   -h, --help     Show this help.
 
 Environment:
-  CPP_GAMES_DEPS_DIR   Dependency cache (default: /tmp/cpp-games-deps)
+  CPP_GAMES_DEPS_DIR   Dependency cache (default: ~/Library/Caches/cpp-games/deps)
   BAREBONES_BUILD_DIR  Build directory (default: /tmp/cpp-games-barebones-build)
 EOF
 }

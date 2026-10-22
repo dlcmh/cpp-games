@@ -9,8 +9,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PROJECT="${ROOT}/Games/01-Barebones"
 PROJECT_REL="Games/01-Barebones"
-DEPS_DIR="${CPP_GAMES_DEPS_DIR:-/tmp/cpp-games-deps}"
-TOOLS_DIR="${CPP_GAMES_TOOLS_DIR:-/tmp/cpp-games-tools}"
+DEPS_DIR="${CPP_GAMES_DEPS_DIR:-${HOME}/Library/Caches/cpp-games/deps}"
+TOOLS_DIR="${CPP_GAMES_TOOLS_DIR:-${HOME}/Library/Caches/cpp-games/tools}"
 BUILD_DIR="${BAREBONES_CHECK_BUILD_DIR:-/tmp/cpp-games-barebones-check}"
 
 MODE="all"
@@ -28,8 +28,8 @@ Options:
   -h, --help  Show this help.
 
 Environment:
-  CPP_GAMES_DEPS_DIR        Build dependency cache (default: /tmp/cpp-games-deps)
-  CPP_GAMES_TOOLS_DIR       clang-tidy cache (default: /tmp/cpp-games-tools)
+  CPP_GAMES_DEPS_DIR        Build dependency cache (default: ~/Library/Caches/cpp-games/deps)
+  CPP_GAMES_TOOLS_DIR       clang-tidy cache (default: ~/Library/Caches/cpp-games/tools)
   BAREBONES_CHECK_BUILD_DIR Check build directory (default: /tmp/cpp-games-barebones-check)
 EOF
 }

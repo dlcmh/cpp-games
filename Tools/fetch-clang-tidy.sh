@@ -3,7 +3,7 @@
 # clang-tidy, so this keeps local linting available without Homebrew or CI.
 set -euo pipefail
 
-CACHE_DIR="${1:-${CPP_GAMES_TOOLS_DIR:-/tmp/cpp-games-tools}}"
+CACHE_DIR="${1:-${CPP_GAMES_TOOLS_DIR:-${HOME}/Library/Caches/cpp-games/tools}}"
 DOWNLOAD_DIR="${CACHE_DIR}/downloads"
 INSTALL_DIR="${CACHE_DIR}/clang-tidy"
 TIDY_BIN="${INSTALL_DIR}/clang_tidy/data/bin/clang-tidy"

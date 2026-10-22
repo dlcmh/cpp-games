@@ -39,9 +39,9 @@ From this directory:
 ```
 
 The first run downloads pinned versions of SDL3, metal-cpp, and the Slang
-compiler into `/tmp/cpp-games-deps` (roughly 90 MB), builds the app into a
-disposable directory under `/tmp`, bundles the shader and SDL3 framework, and
-launches the game.
+compiler into `~/Library/Caches/cpp-games/deps` (roughly 90 MB), builds the app
+into a disposable directory under `/tmp`, bundles the shader and SDL3 framework,
+and launches the game.
 
 ```sh
 ./run.sh --build-only   # build without launching
@@ -55,11 +55,18 @@ The app bundle is written to:
 /tmp/cpp-games-barebones-build/Barebones.app
 ```
 
-Dependencies are cached, so subsequent builds are quick and offline. To force a
-fresh download, remove the cache:
+Dependencies are cached, so subsequent builds are quick and offline. Build
+outputs deliberately live under `/tmp` and are disposable. The shared caches do
+not: macOS's `tmp_cleaner` deletes `/tmp` entries once their access, modification,
+and change times are all more than three days old. SDL, Slang, metal-cpp, and
+clang-tidy therefore live in `~/Library/Caches/cpp-games`, where they survive
+reboots and the system's temporary-directory sweeps.
+
+To force a fresh download, remove the relevant cache:
 
 ```sh
-rm -rf /tmp/cpp-games-deps
+rm -rf ~/Library/Caches/cpp-games/deps
+rm -rf ~/Library/Caches/cpp-games/tools
 ```
 
 `run.sh` also copies `compile_commands.json` to the repository root so clangd,
@@ -79,7 +86,8 @@ shader, or build-file changes runs the same checks locally:
 4. Rebuild, then verify formatting and include hygiene before the commit lands.
 
 Fixes are re-staged automatically. The first commit that needs them downloads a
-pinned `clang-tidy` binary (about 31 MB) into `/tmp/cpp-games-tools`; the macOS
+pinned `clang-tidy` binary (about 31 MB) into
+`~/Library/Caches/cpp-games/tools`; the macOS
 Command Line Tools already provide `clang-format`, so no Homebrew install is
 needed. If a staged source file also has unstaged edits, the hook stops rather
 than mixing your fixes with unrelated work. Stage or stash those edits and
@@ -253,14 +261,15 @@ the fetch script before configuring.
 ## Troubleshooting
 
 - **`ld: framework 'SDL3' not found`** — run through `./run.sh`; a raw `cmake`
-  invocation must also pass `-DCPP_GAMES_DEPS_DIR=/tmp/cpp-games-deps`.
+  invocation must also pass
+  `-DCPP_GAMES_DEPS_DIR=~/Library/Caches/cpp-games/deps`.
 - **A shader compile error appears at startup** — the generated source is at
   `<build>/generated/sprite.metal`. The error text from Metal includes the line
   number in that file.
 - **Window is hidden behind the terminal** — the app activates itself on launch;
   click the window if macOS keeps the terminal in front.
 - **Old dependency version after editing pins** — delete
-  `/tmp/cpp-games-deps/downloads` and rerun.
+  `~/Library/Caches/cpp-games/deps/downloads` and rerun.
 
 ## Next steps
 

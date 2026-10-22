@@ -3,7 +3,7 @@
 # Everything is cached outside the repository, so the checkout stays small.
 set -euo pipefail
 
-CACHE_DIR="${1:-${CPP_GAMES_DEPS_DIR:-/tmp/cpp-games-deps}}"
+CACHE_DIR="${1:-${CPP_GAMES_DEPS_DIR:-${HOME}/Library/Caches/cpp-games/deps}}"
 DOWNLOADS_DIR="${CACHE_DIR}/downloads"
 
 SDL_VERSION="3.4.18"
