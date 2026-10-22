@@ -8,6 +8,7 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 DEPS_DIR="${CPP_GAMES_DEPS_DIR:-${HOME}/Library/Caches/cpp-games/deps}"
 BUILD_DIR="${BAREBONES_BUILD_DIR:-/tmp/cpp-games-barebones-build}"
 BUILD_ONLY=0
+STATS=0
 
 usage() {
     cat <<'EOF'
@@ -16,6 +17,7 @@ Usage: ./run.sh [options]
 Options:
   --build-only   Build the app bundle without launching it.
   --clean        Delete the previous build directory first.
+  --stats        Print CPU and memory usage every second while running.
   -h, --help     Show this help.
 
 Environment:
@@ -31,6 +33,9 @@ while [[ $# -gt 0 ]]; do
             ;;
         --clean)
             rm -rf "${BUILD_DIR}"
+            ;;
+        --stats)
+            STATS=1
             ;;
         -h|--help)
             usage
@@ -72,4 +77,8 @@ if [[ "${BUILD_ONLY}" -eq 1 ]]; then
     exit 0
 fi
 
-exec "${APP}/Contents/MacOS/Barebones" "$@"
+if [[ "${STATS}" -eq 1 ]]; then
+    exec "${REPO_ROOT}/Tools/run-with-stats.sh" "${APP}/Contents/MacOS/Barebones"
+fi
+
+exec "${APP}/Contents/MacOS/Barebones"

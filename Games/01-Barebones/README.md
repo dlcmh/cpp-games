@@ -46,6 +46,7 @@ and launches the game.
 ```sh
 ./run.sh --build-only   # build without launching
 ./run.sh --clean        # delete /tmp/cpp-games-barebones-build, rebuild, launch
+./run.sh --stats        # launch and print CPU + RSS every second
 ./run.sh --help         # show all options
 ```
 
@@ -54,6 +55,15 @@ The app bundle is written to:
 ```text
 /tmp/cpp-games-barebones-build/Barebones.app
 ```
+
+The `--stats` switch samples the running game process every second and prints
+its CPU percentage and resident set size, for example:
+
+```text
+[stats] 22:21:38  CPU   6.6%  RSS   84.8 MB
+```
+
+Ctrl-C stops both the sampler and the game.
 
 Dependencies are cached, so subsequent builds are quick and offline. Build
 outputs deliberately live under `/tmp` and are disposable. The shared caches do

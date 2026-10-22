@@ -48,13 +48,26 @@ The first run downloads the pinned SDL3, metal-cpp, and Slang versions into
 ```sh
 ./run.sh --build-only   # build without launching
 ./run.sh --clean        # rebuild from scratch
+./run.sh --stats        # launch and print CPU + RSS every second
 ./run.sh --help
 ```
 
 The app bundle is written to
-`/tmp/cpp-games-rotatables-build/Rotatables.app`. `run.sh` also installs the
-repository pre-commit hook and writes `compile_commands.json` next to this
-README for clangd.
+`/tmp/cpp-games-rotatables-build/Rotatables.app`.
+
+The `--stats` switch runs the game through
+[`Tools/run-with-stats.sh`](../../Tools/run-with-stats.sh), which samples the
+game process once per second and prints its CPU percentage and resident set
+size in MB:
+
+```text
+[stats] 22:21:38  CPU   6.6%  RSS   84.8 MB
+```
+
+Ctrl-C stops both the sampler and the game.
+
+`run.sh` also installs the repository pre-commit hook and writes
+`compile_commands.json` next to this README for clangd.
 
 ## Main software engineering points
 
