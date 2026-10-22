@@ -6,7 +6,6 @@
 #include "Platform/macOS/MetalRenderer.hpp"
 #include "Render/IRenderer.hpp"
 
-#include <algorithm>
 #include <cstdlib>
 #include <filesystem>
 #include <memory>
