@@ -1,4 +1,4 @@
-# Name of game: Barebones
+# Barebones
 
 A rotating neon **A**, rendered with SDL, Metal, and a Slang shader on macOS.
 
