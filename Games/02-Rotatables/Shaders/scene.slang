@@ -73,7 +73,9 @@ float3 shadeCharacter(float2 uv, float aspect, float3 color)
     // The selector only encloses the row of skin pips. It stays in unrotated
     // cell space so the UI is stable while the glyph spins.
     float2 selectorCenter = cellCentered - float2(0.0, -0.84);
-    float selectorDistance = sdRoundBox(selectorCenter, float2(0.295, 0.052), 0.048);
+    float selectorHalfHeight = 0.055;
+    float selectorDistance =
+        sdRoundBox(selectorCenter, float2(0.295, selectorHalfHeight), selectorHalfHeight);
     float selectorLine = 1.0 - smoothstep(0.0015, 0.0045, abs(selectorDistance));
     color += selectorLine * accent * (isSelected ? 0.50 : 0.09);
 

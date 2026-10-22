@@ -3,7 +3,7 @@
 Rotating **A** and rotating **B** are neighbors. Each has its own rotation and
 skin; the selected neighbor's skin selector is framed in its accent color.
 
-![Rotatables showing Aurora A and Ember B](Docs/screenshot.png)
+![Rotatables showing Aurora A and Ember B with compact skin selectors](Docs/screenshot-compact-selectors.png)
 
 ## Controls
 
@@ -144,7 +144,7 @@ for the full tooling setup.
 ├── README.md
 ├── run.sh
 ├── Docs/
-│   └── screenshot.png
+│   └── screenshot-compact-selectors.png
 ├── Shaders/
 │   ├── common.slang        # uniforms, noise, glyph SDFs, palette
 │   ├── skins.slang         # five fill effects + five edge effects
