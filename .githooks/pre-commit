@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Runs automatically before every commit. Installed by Tools/install-hooks.sh
+# (and by the game's run.sh).
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+exec "${ROOT}/Tools/check.sh" --staged --fix

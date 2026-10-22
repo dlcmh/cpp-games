@@ -45,6 +45,7 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
+"${REPO_ROOT}/Tools/install-hooks.sh"
 "${SCRIPT_DIR}/ThirdParty/fetch-dependencies.sh" "${DEPS_DIR}"
 
 cmake \

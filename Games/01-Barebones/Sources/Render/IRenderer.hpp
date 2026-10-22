@@ -19,8 +19,7 @@ class IRenderer {
 public:
     virtual ~IRenderer() = default;
 
-    virtual bool initialize(const NativeSurface& surface,
-                            const std::string& shaderPath,
+    virtual bool initialize(const NativeSurface& surface, const std::string& shaderPath,
                             std::string& error) = 0;
 
     virtual void resize(int pixelWidth, int pixelHeight) = 0;

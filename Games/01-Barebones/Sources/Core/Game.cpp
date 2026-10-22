@@ -18,7 +18,8 @@ void Game::update(float deltaSeconds) {
         return;
     }
 
-    state_.angleRadians = std::fmod(state_.angleRadians + state_.rotationSpeed * deltaSeconds, kTwoPi);
+    state_.angleRadians =
+        std::fmod(state_.angleRadians + state_.rotationSpeed * deltaSeconds, kTwoPi);
     if (state_.angleRadians < 0.0f) {
         state_.angleRadians += kTwoPi;
     }

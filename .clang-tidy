@@ -1,0 +1,17 @@
+---
+# Local include hygiene, enforced by Tools/check.sh and the pre-commit hook.
+# `misc-include-cleaner` removes unused includes and adds direct includes for
+# symbols that are currently coming in transitively.
+Checks: '-*,misc-include-cleaner'
+WarningsAsErrors: ''
+HeaderFilterRegex: '^.*/Games/[^/]+/Sources/.*$'
+ExcludeHeaderFilterRegex: '^.*/(ThirdParty|build|\.cache)/.*$'
+SystemHeaders: false
+
+CheckOptions:
+  misc-include-cleaner.DeduplicateFindings: 'true'
+  misc-include-cleaner.MissingIncludes: 'true'
+  misc-include-cleaner.UnusedIncludes: 'true'
+  # Never rewrite third-party/SDK includes: umbrella headers and framework
+  # headers confuse include-cleaner, and they are not ours to clean up.
+  misc-include-cleaner.IgnoreHeaders: '.*SDL3.*|.*SDL_.*|.*Metal/.*|.*Foundation.*|.*QuartzCore.*|.*CoreFoundation.*|.*CoreGraphics.*|.*AppKit.*|.*Cocoa.*|.*objc.*|.*Availability.*'

@@ -20,7 +20,8 @@ The window title shows the current speed and whether the game is paused.
 ## Requirements
 
 - macOS with Metal support (tested on macOS 26.6, Apple Silicon).
-- Xcode Command Line Tools: `xcode-select --install`.
+- Xcode Command Line Tools: `xcode-select --install` (provides the compiler,
+  `clang-format`, and `clangd`).
 - CMake 3.25 or newer.
 - `curl` and `hdiutil`, both included with macOS.
 
@@ -64,6 +65,45 @@ rm -rf /tmp/cpp-games-deps
 `run.sh` also copies `compile_commands.json` to the repository root so clangd,
 Zed, and the VS Code clangd extension can resolve every include and compile flag
 without editor-specific configuration.
+
+## Local checks and auto-fixes
+
+The project has no CI dependency. `run.sh` installs a tracked Git pre-commit
+hook (`.githooks/pre-commit`) automatically, and every commit involving C++,
+shader, or build-file changes runs the same checks locally:
+
+1. Build with `-Werror` enabled.
+2. Format changed C++/Objective-C++ files with `clang-format`.
+3. Run `clang-tidy`'s `misc-include-cleaner` to remove unused includes and add
+   direct includes for symbols that were only available transitively.
+4. Rebuild, then verify formatting and include hygiene before the commit lands.
+
+Fixes are re-staged automatically. The first commit that needs them downloads a
+pinned `clang-tidy` binary (about 31 MB) into `/tmp/cpp-games-tools`; the macOS
+Command Line Tools already provide `clang-format`, so no Homebrew install is
+needed. If a staged source file also has unstaged edits, the hook stops rather
+than mixing your fixes with unrelated work. Stage or stash those edits and
+commit again.
+
+You can run the checks manually:
+
+```sh
+Tools/check.sh --all            # check every game source, no modifications
+Tools/check.sh --all --fix      # format and clean includes across the game
+Tools/check.sh --staged         # check exactly what is staged, no modifications
+```
+
+The shared rules live at the repository root:
+
+- [`.clang-format`](../../.clang-format) — formatting style.
+- [`.clang-tidy`](../../.clang-tidy) — include-cleaner configuration; third-party
+  and SDK headers are deliberately excluded from automatic rewriting.
+- [`Tools/check.sh`](../../Tools/check.sh) — format, include, and build checks.
+- [`Tools/fetch-clang-tidy.sh`](../../Tools/fetch-clang-tidy.sh) — pinned local
+  clang-tidy download.
+
+To disable the hook, run `git config --local core.hooksPath /dev/null`. To bypass
+it once, use `git commit --no-verify`.
 
 ## Dependency setup
 

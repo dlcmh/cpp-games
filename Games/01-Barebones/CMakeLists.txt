@@ -7,6 +7,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+option(BAREBONES_WERROR "Treat compiler warnings as errors (used by the local check hook)" OFF)
+
 if(NOT APPLE)
     message(FATAL_ERROR "Barebones currently targets macOS only.")
 endif()
@@ -84,6 +86,9 @@ add_executable(Barebones
 
 target_include_directories(Barebones PRIVATE Sources)
 target_compile_options(Barebones PRIVATE -Wall -Wextra -Wpedantic)
+if(BAREBONES_WERROR)
+    target_compile_options(Barebones PRIVATE -Werror)
+endif()
 target_link_libraries(Barebones PRIVATE
     SDL3
     metal-cpp

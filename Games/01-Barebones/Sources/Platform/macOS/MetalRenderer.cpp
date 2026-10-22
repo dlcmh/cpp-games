@@ -1,16 +1,18 @@
 #include "Platform/macOS/MetalRenderer.hpp"
+#include "Render/IRenderer.hpp"
+#include "Render/PipelineState.hpp"
 
+#include <CoreGraphics/CoreGraphics.h>
 #include <Foundation/Foundation.hpp>
 #include <Metal/Metal.hpp>
 #include <QuartzCore/QuartzCore.hpp>
 
-#include <CoreGraphics/CoreGraphics.h>
-
 #include <cstddef>
 #include <fstream>
+#include <ios>
 #include <iterator>
+#include <memory>
 #include <string>
-#include <utility>
 
 namespace barebones {
 namespace {
@@ -53,8 +55,7 @@ public:
     MetalRenderer() = default;
     ~MetalRenderer() override = default;
 
-    bool initialize(const NativeSurface& surface,
-                    const std::string& shaderPath,
+    bool initialize(const NativeSurface& surface, const std::string& shaderPath,
                     std::string& error) override;
 
     void resize(int pixelWidth, int pixelHeight) override;
@@ -72,8 +73,7 @@ private:
     int pixelHeight_{0};
 };
 
-bool MetalRenderer::initialize(const NativeSurface& surface,
-                               const std::string& shaderPath,
+bool MetalRenderer::initialize(const NativeSurface& surface, const std::string& shaderPath,
                                std::string& error) {
     NS::AutoreleasePool* pool = NS::AutoreleasePool::alloc()->init();
 
@@ -150,8 +150,7 @@ bool MetalRenderer::buildPipeline(const std::string& shaderPath, std::string& er
     descriptor->colorAttachments()->object(0)->setPixelFormat(MTL::PixelFormatBGRA8Unorm);
 
     metalError = nullptr;
-    MTL::RenderPipelineState* pipeline =
-        device_->newRenderPipelineState(descriptor, &metalError);
+    MTL::RenderPipelineState* pipeline = device_->newRenderPipelineState(descriptor, &metalError);
     if (pipeline == nullptr) {
         error = "Could not create the render pipeline: " + describeError(metalError);
     } else {
@@ -175,8 +174,8 @@ void MetalRenderer::resize(int pixelWidth, int pixelHeight) {
 
     pixelWidth_ = pixelWidth;
     pixelHeight_ = pixelHeight;
-    layer_->setDrawableSize(CGSizeMake(static_cast<CGFloat>(pixelWidth),
-                                       static_cast<CGFloat>(pixelHeight)));
+    layer_->setDrawableSize(
+        CGSizeMake(static_cast<CGFloat>(pixelWidth), static_cast<CGFloat>(pixelHeight)));
 }
 
 bool MetalRenderer::draw(const RenderFrame& frame, std::string& error) {
@@ -220,8 +219,7 @@ bool MetalRenderer::draw(const RenderFrame& frame, std::string& error) {
     encoder->setRenderPipelineState(pipelineState_.get());
     encoder->setVertexBytes(&uniforms, sizeof(uniforms), 0);
     encoder->setFragmentBytes(&uniforms, sizeof(uniforms), 0);
-    encoder->drawPrimitives(MTL::PrimitiveTypeTriangle,
-                            static_cast<NS::UInteger>(0),
+    encoder->drawPrimitives(MTL::PrimitiveTypeTriangle, static_cast<NS::UInteger>(0),
                             static_cast<NS::UInteger>(3));
     encoder->endEncoding();
 

@@ -3,14 +3,17 @@
 
 #include "Core/Game.hpp"
 #include "Core/GameLoop.hpp"
+#include "Core/GameTypes.hpp"
 #include "Platform/macOS/MetalRenderer.hpp"
 #include "Render/IRenderer.hpp"
+#include "Render/PipelineState.hpp"
 
 #include <cstdlib>
 #include <filesystem>
 #include <memory>
 #include <string>
 #include <system_error>
+#include <utility>
 
 namespace {
 
@@ -74,11 +77,9 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    SDL_Window* window = SDL_CreateWindow(
-        "Barebones - Rotating A",
-        kInitialWindowWidth,
-        kInitialWindowHeight,
-        SDL_WINDOW_METAL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+    SDL_Window* window =
+        SDL_CreateWindow("Barebones - Rotating A", kInitialWindowWidth, kInitialWindowHeight,
+                         SDL_WINDOW_METAL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
     if (window == nullptr) {
         logError("SDL_CreateWindow failed");
         SDL_Quit();
@@ -181,10 +182,9 @@ int main(int argc, char* argv[]) {
         }
 
         const barebones::GameState& state = game.state();
-        const float extraAngle = state.paused
-                                     ? 0.0f
-                                     : state.rotationSpeed *
-                                           static_cast<float>(gameLoop.remainderSeconds());
+        const float extraAngle =
+            state.paused ? 0.0f
+                         : state.rotationSpeed * static_cast<float>(gameLoop.remainderSeconds());
         const barebones::RenderFrame frame{
             state.angleRadians + extraAngle,
             state.elapsedSeconds + static_cast<float>(gameLoop.remainderSeconds()),
@@ -193,8 +193,7 @@ int main(int argc, char* argv[]) {
         };
 
         if (!renderer->draw(frame, rendererError)) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Render failed: %s",
-                         rendererError.c_str());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Render failed: %s", rendererError.c_str());
             running = false;
         }
 
