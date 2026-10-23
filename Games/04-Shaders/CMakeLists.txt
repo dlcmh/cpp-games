@@ -97,55 +97,6 @@ add_custom_target(ShadersResources ALL
 )
 add_dependencies(Shaders ShadersResources)
 
-add_executable(RollerCoaster
-    Sources/RollerCoaster/Main.cpp
-    Sources/Platform/macOS/MetalImpl.mm
-)
-target_compile_options(RollerCoaster PRIVATE -Wall -Wextra -Wpedantic)
-if(CPP_GAMES_WERROR)
-    target_compile_options(RollerCoaster PRIVATE -Werror)
-endif()
-target_link_libraries(RollerCoaster PRIVATE
-    SDL3
-    metal-cpp
-    "${METAL_FRAMEWORK}"
-    "${QUARTZCORE_FRAMEWORK}"
-    "${FOUNDATION_FRAMEWORK}"
-)
-add_dependencies(RollerCoaster ShadersShaders)
-
-add_custom_target(RollerCoasterResources ALL
-    COMMAND ${CMAKE_COMMAND} -E make_directory
-            "$<TARGET_BUNDLE_DIR:RollerCoaster>/Contents/Resources/shaders"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${CMAKE_BINARY_DIR}/generated/roller-coaster.metal"
-            "$<TARGET_BUNDLE_DIR:RollerCoaster>/Contents/Resources/shaders/roller-coaster.metal"
-    DEPENDS "${CMAKE_BINARY_DIR}/generated/roller-coaster.metal"
-    COMMENT "Bundling roller coaster shader"
-    VERBATIM
-)
-add_dependencies(RollerCoaster RollerCoasterResources)
-
-set_target_properties(RollerCoaster PROPERTIES
-    MACOSX_BUNDLE TRUE
-    MACOSX_BUNDLE_BUNDLE_NAME "Roller Coaster"
-    MACOSX_BUNDLE_GUI_IDENTIFIER "com.dlcmh.cppgames.rollercoaster"
-    MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
-    MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
-    BUILD_RPATH "@executable_path/../Frameworks"
-    XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME NO
-    OUTPUT_NAME "RollerCoaster"
-)
-add_custom_command(TARGET RollerCoaster POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E remove_directory
-            "$<TARGET_BUNDLE_DIR:RollerCoaster>/Contents/Frameworks/SDL3.framework"
-    COMMAND ditto
-            "${SDL3_FRAMEWORK}"
-            "$<TARGET_BUNDLE_DIR:RollerCoaster>/Contents/Frameworks/SDL3.framework"
-    COMMENT "Bundling roller coaster SDL3.framework"
-    VERBATIM
-)
-
 set_target_properties(Shaders PROPERTIES
     MACOSX_BUNDLE TRUE
     MACOSX_BUNDLE_BUNDLE_NAME "Shaders"

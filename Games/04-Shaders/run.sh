@@ -18,7 +18,6 @@ The example is the shader file name without .slang:
   ./run.sh 1
   ./run.sh unfilled-rectangle
   ./run.sh 2
-  ./run.sh roller-coaster
 
 Environment:
   CPP_GAMES_DEPS_DIR  Dependency cache (default: ~/Library/Caches/cpp-games/deps)
@@ -59,22 +58,13 @@ cmake -S "${SCRIPT_DIR}" -B "${BUILD_DIR}" \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCPP_GAMES_DEPS_DIR="${DEPS_DIR}"
 
-if [[ "${EXAMPLE}" == "roller-coaster" ]]; then
-    TARGET=RollerCoaster
-    APP_NAME=RollerCoaster
-    BINARY=RollerCoaster
-else
-    TARGET=Shaders
-    APP_NAME=Shaders
-    BINARY=Shaders
-fi
-cmake --build "${BUILD_DIR}" --target "${TARGET}" --parallel
+cmake --build "${BUILD_DIR}" --target Shaders --parallel
 
 if [[ -f "${BUILD_DIR}/compile_commands.json" ]]; then
     cp "${BUILD_DIR}/compile_commands.json" "${SCRIPT_DIR}/compile_commands.json"
 fi
 
-APP="${BUILD_DIR}/${APP_NAME}.app"
+APP="${BUILD_DIR}/Shaders.app"
 if [[ ! -d "${APP}" ]]; then
     echo "Build succeeded, but ${APP} was not found." >&2
     exit 1
@@ -85,4 +75,4 @@ if [[ "${BUILD_ONLY}" -eq 1 ]]; then
     exit 0
 fi
 
-exec "${APP}/Contents/MacOS/${BINARY}" "${EXAMPLE}"
+exec "${APP}/Contents/MacOS/Shaders" "${EXAMPLE}"
