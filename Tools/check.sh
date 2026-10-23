@@ -130,11 +130,13 @@ for project in "${PROJECTS[@]}"; do
     esac
 done
 
-for relative in "${CANDIDATES[@]}"; do
-    case "${relative}" in
-        Engine/*) ENGINE_CHANGED=1 ;;
-    esac
-done
+if [[ "${#CANDIDATES[@]}" -gt 0 ]]; then
+    for relative in "${CANDIDATES[@]}"; do
+        case "${relative}" in
+            Engine/*) ENGINE_CHANGED=1 ;;
+        esac
+    done
+fi
 
 if [[ "${MODE}" == "all" ]]; then
     BUILD_PROJECTS=("${PROJECTS[@]}")
