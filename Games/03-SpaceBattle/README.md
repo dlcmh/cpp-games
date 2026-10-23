@@ -141,9 +141,9 @@ convergence, and visual preset.
 
 The planets come from the shared
 [Engine/Planets](../../Engine/Planets/README.md) module and are iterated in the
-[Planet Lab](<Labs/Planet Lab/README.md>). Both open on
-`kShowcasePlanetSeed`, and both draw `PlanetSpec` through `PlanetRenderer`; the
-lab presses `Space` to explore beyond the showcase planet.
+[Planet Lab](<Labs/Planet Lab/README.md>). Both draw `PlanetSpec` through
+`PlanetRenderer`; the game rolls a fresh planet at the start of every scene,
+and the lab rolls a fresh planet every time `Space` is pressed.
 
 The Slang compiler emits Metal Shading Language at build time. The app compiles
 the generated `.metal` source at runtime, so development works with only the

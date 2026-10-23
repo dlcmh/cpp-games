@@ -1,9 +1,8 @@
 # Planet Lab
 
-A standalone procedural planet generator. It opens on the same curated planet
-seed as SpaceBattle. Every press of `Space` creates a new world: different
-surface archetype, colours, clouds, ice, craters, lava, atmosphere, axial tilt,
-rotation, and optional rings.
+A standalone procedural planet generator. Every press of `Space` creates a new
+world: different surface archetype, colours, clouds, ice, craters, lava,
+atmosphere, axial tilt, rotation, and optional rings.
 
 ![Planet Lab](Docs/screenshot.png)
 
@@ -78,4 +77,5 @@ parameters. There are no imported textures or models.
 This lab intentionally renders only the planet, rings, atmosphere, and
 starfield. It shares [`PlanetSpec`](../../../../Engine/Planets/Include/Planets/PlanetSpec.hpp)
 and [`PlanetRenderer`](../../../../Engine/Planets/Include/Planets/PlanetRenderer.hpp)
-with SpaceBattle; the game draws a curated planet with the same module.
+with SpaceBattle. The game rolls a fresh random planet at the start of every
+scene, using the same generator and renderer as this lab.

@@ -55,8 +55,10 @@ std::string_view phaseName(BattlePhase phase) {
 BattleGame::BattleGame() {
     state_.steer = 0.0f;
 
-    // Same showcase planet the Planet Lab opens with.
-    planet_ = cppgames::planets::generatePlanet(cppgames::planets::kShowcasePlanetSeed);
+    // Every scene gets a fresh planet. There is no fixed set: the seed is
+    // random at startup, then rolls forward exactly like Space in the lab.
+    planetSeed_ = cppgames::planets::randomPlanetSeed();
+    planet_ = cppgames::planets::generatePlanet(planetSeed_);
 }
 
 void BattleGame::update(float deltaSeconds) {
@@ -91,6 +93,7 @@ void BattleGame::previewPhase(int oneBasedPhase) {
     state_.phase = static_cast<BattlePhase>(phaseIndex);
     state_.phaseTime = 0.0f;
     state_.paused = false;
+    rollPlanet();
 
     // Start previews a little way into each phase so the representative
     // camera and effect state are immediately visible.
@@ -125,6 +128,7 @@ const cppgames::planets::PlanetSpec& BattleGame::planet() const noexcept {
 
 void BattleGame::advancePhase() {
     state_.phaseTime = 0.0f;
+    rollPlanet();
     switch (state_.phase) {
         case BattlePhase::Approach:
             state_.phase = BattlePhase::TrenchRun;
@@ -146,6 +150,11 @@ void BattleGame::advancePhase() {
             state_.phase = BattlePhase::Approach;
             break;
     }
+}
+
+void BattleGame::rollPlanet() {
+    planetSeed_ = cppgames::planets::nextSeed(planetSeed_);
+    planet_ = cppgames::planets::generatePlanet(planetSeed_);
 }
 
 }  // namespace spacebattle

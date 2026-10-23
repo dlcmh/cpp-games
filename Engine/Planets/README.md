@@ -9,7 +9,6 @@ Shared procedural planet generation and rendering used by
 - [`PlanetSpec`](Include/Planets/PlanetSpec.hpp) — seeded archetype, palette,
   surface parameters, atmosphere, and ring parameters.
 - `generatePlanet(seed)` / `nextSeed(seed)` — deterministic CPU generation.
-- `kShowcasePlanetSeed` — the opening planet shared by SpaceBattle and the lab.
 - [`PlanetRenderer`](Include/Planets/PlanetRenderer.hpp) — shared Metal renderer
   for a planet sphere, atmosphere shell, and optional rings.
 - `PlanetDraw` — per-instance view-projection, model, ring model, camera, sun,

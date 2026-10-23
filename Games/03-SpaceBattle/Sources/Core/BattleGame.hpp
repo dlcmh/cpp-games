@@ -21,9 +21,11 @@ public:
 
 private:
     void advancePhase();
+    void rollPlanet();
 
     BattleState state_{};
     cppgames::planets::PlanetSpec planet_{};
+    std::uint64_t planetSeed_{};
 };
 
 }  // namespace spacebattle

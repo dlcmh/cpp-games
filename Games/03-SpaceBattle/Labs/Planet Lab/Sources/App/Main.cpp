@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
     SDL_ShowWindow(window);
     SDL_RaiseWindow(window);
 
-    std::uint64_t seed = cppgames::planets::kShowcasePlanetSeed;
+    std::uint64_t seed = cppgames::planets::randomPlanetSeed();
     cppgames::planets::PlanetSpec spec = cppgames::planets::generatePlanet(seed);
     float time = 0.0f;
     bool paused = false;

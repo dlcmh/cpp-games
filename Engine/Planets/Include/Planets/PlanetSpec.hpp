@@ -47,11 +47,8 @@ struct PlanetSpec {
     float ringColorB[3]{0.35f, 0.30f, 0.25f};
 };
 
-// The planet both the game and the lab open with. Space in the lab explores
-// beyond it.
-inline constexpr std::uint64_t kShowcasePlanetSeed = 0x0DDA9BF55BA7CF8Bull;
-
 [[nodiscard]] PlanetSpec generatePlanet(std::uint64_t seed);
+[[nodiscard]] std::uint64_t randomPlanetSeed();
 [[nodiscard]] const char* planetTypeName(PlanetType type);
 [[nodiscard]] std::uint64_t nextSeed(std::uint64_t current);
 

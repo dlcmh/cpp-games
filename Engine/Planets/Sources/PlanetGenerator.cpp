@@ -242,6 +242,11 @@ PlanetSpec generatePlanet(std::uint64_t seed) {
     return spec;
 }
 
+std::uint64_t randomPlanetSeed() {
+    std::random_device device;
+    return (static_cast<std::uint64_t>(device()) << 32) ^ static_cast<std::uint64_t>(device());
+}
+
 const char* planetTypeName(PlanetType type) {
     switch (type) {
         case PlanetType::Terran:
