@@ -102,12 +102,12 @@ std::vector<cppgames::lasers::LaserBeam> LaserDemo::beams() const {
         beam.end[0] = x1;
         beam.end[1] = y1;
         beam.end[2] = -4.0f - bolt.travel - bolt.length;
-        beam.width = 0.18f;
-        beam.color[0] = 1.0f;
-        beam.color[1] = 0.13f;
-        beam.color[2] = 0.035f;
-        beam.intensity = 1.2f;
-        beam.style = 0;
+        beam.width = cppgames::lasers::kXWingLaserVisual.width;
+        beam.color[0] = cppgames::lasers::kXWingLaserVisual.color[0];
+        beam.color[1] = cppgames::lasers::kXWingLaserVisual.color[1];
+        beam.color[2] = cppgames::lasers::kXWingLaserVisual.color[2];
+        beam.intensity = cppgames::lasers::kXWingLaserVisual.intensity;
+        beam.style = static_cast<int>(cppgames::lasers::LaserStyle::XWing);
         beam.seed = bolt.seed;
         result.push_back(beam);
     }

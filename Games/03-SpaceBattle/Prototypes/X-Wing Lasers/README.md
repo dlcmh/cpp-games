@@ -46,10 +46,10 @@ whether the cockpit overlay is visible.
 - [`Shaders/backdrop.slang`](Shaders/backdrop.slang) — stars, planet, and target
   for context.
 
-`LaserDemo::beams()` produces `cppgames::lasers::LaserBeam` values. The shared
-renderer projects them to screen space and draws additive glowing segments. The
-lab and SpaceBattle therefore share the same laser look and the same data
-contract.
+`LaserDemo::beams()` produces `cppgames::lasers::LaserBeam` values using the
+shared `kXWingLaserVisual` preset. The renderer projects them to screen space and
+draws additive glowing segments. The lab and SpaceBattle therefore share the
+same laser look, preset, and data contract.
 
 ## Pluggable into SpaceBattle
 

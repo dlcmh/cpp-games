@@ -9,6 +9,16 @@ enum class LaserStyle : int {
     Heavy,
 };
 
+// Canonical X-Wing bolt look shared by the lab and SpaceBattle. Keeping the
+// preset here means tuning the lab does not leave the game behind.
+struct LaserVisual {
+    float width{0.18f};
+    float color[3]{1.0f, 0.13f, 0.035f};
+    float intensity{1.2f};
+};
+
+inline constexpr LaserVisual kXWingLaserVisual{};
+
 // Renderer-neutral beam description. Apps can build these from gameplay state
 // without depending on Metal.
 struct LaserBeam {

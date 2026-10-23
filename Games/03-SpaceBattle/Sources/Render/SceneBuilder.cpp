@@ -94,8 +94,11 @@ void addPlayerLasers(RenderFrame& frame, const CameraBasis& basis, bool firing) 
     const Vec3 rightMuzzle =
         origin + basis.right * 0.85f + basis.up * -0.45f + basis.forward * 6.0f;
     const Vec3 target = origin + basis.forward * 90.0f;
-    addBeam(frame, leftMuzzle, target, 0.040f, {1.0f, 0.22f, 0.10f}, 1.0f, 0);
-    addBeam(frame, rightMuzzle, target, 0.040f, {1.0f, 0.22f, 0.10f}, 1.0f, 0);
+    const auto& visual = cppgames::lasers::kXWingLaserVisual;
+    addBeam(frame, leftMuzzle, target, visual.width,
+            {visual.color[0], visual.color[1], visual.color[2]}, visual.intensity, 0);
+    addBeam(frame, rightMuzzle, target, visual.width,
+            {visual.color[0], visual.color[1], visual.color[2]}, visual.intensity, 0);
 }
 
 void addTieFighters(RenderFrame& frame, float time, Vec3 around) {

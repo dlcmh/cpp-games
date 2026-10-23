@@ -7,6 +7,8 @@ Reusable X-Wing laser rendering shared by SpaceBattle and the
 
 - [`LaserBeam`](Include/Lasers/LaserTypes.hpp) — world-space start/end points,
   width, color, intensity, style, and a deterministic seed. No graphics types.
+- `kXWingLaserVisual` — the canonical X-Wing width/color/intensity preset used
+  by both the lab and SpaceBattle, so lab tuning lands in the game.
 - [`LaserFrame`](Include/Lasers/LaserTypes.hpp) — view-projection, projection
   scale, aspect ratio, camera position, and time.
 - [`LaserRenderer`](Include/Lasers/LaserRenderer.hpp) — compiles `laser.metal`,
