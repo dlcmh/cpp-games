@@ -99,6 +99,20 @@ target_link_libraries(Barebones PRIVATE
 
 add_dependencies(Barebones BarebonesShaders)
 
+# Copy shaders on every build, not only when the executable relinks. Shader-only
+# edits otherwise leave a stale .metal file inside the app bundle.
+add_custom_target(BarebonesResources ALL
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+            "$<TARGET_BUNDLE_DIR:Barebones>/Contents/Resources/shaders"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${SHADER_OUTPUT}"
+            "$<TARGET_BUNDLE_DIR:Barebones>/Contents/Resources/shaders/sprite.metal"
+    DEPENDS "${SHADER_OUTPUT}"
+    COMMENT "Bundling Barebones shaders"
+    VERBATIM
+)
+add_dependencies(Barebones BarebonesResources)
+
 set_target_properties(Barebones PROPERTIES
     MACOSX_BUNDLE TRUE
     MACOSX_BUNDLE_BUNDLE_NAME "Barebones"
@@ -110,11 +124,6 @@ set_target_properties(Barebones PROPERTIES
 )
 
 add_custom_command(TARGET Barebones POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory
-            "$<TARGET_BUNDLE_DIR:Barebones>/Contents/Resources/shaders"
-    COMMAND ${CMAKE_COMMAND} -E copy
-            "${SHADER_OUTPUT}"
-            "$<TARGET_BUNDLE_DIR:Barebones>/Contents/Resources/shaders/sprite.metal"
     COMMAND ${CMAKE_COMMAND} -E remove_directory
             "$<TARGET_BUNDLE_DIR:Barebones>/Contents/Frameworks/SDL3.framework"
     COMMAND ditto

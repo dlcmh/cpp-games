@@ -100,6 +100,18 @@ target_link_libraries(Rotatables PRIVATE
 
 add_dependencies(Rotatables RotatablesShaders)
 
+add_custom_target(RotatablesResources ALL
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+            "$<TARGET_BUNDLE_DIR:Rotatables>/Contents/Resources/shaders"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${SHADER_OUTPUT}"
+            "$<TARGET_BUNDLE_DIR:Rotatables>/Contents/Resources/shaders/scene.metal"
+    DEPENDS "${SHADER_OUTPUT}"
+    COMMENT "Bundling Rotatables shaders"
+    VERBATIM
+)
+add_dependencies(Rotatables RotatablesResources)
+
 set_target_properties(Rotatables PROPERTIES
     MACOSX_BUNDLE TRUE
     MACOSX_BUNDLE_BUNDLE_NAME "Rotatables"
@@ -111,11 +123,6 @@ set_target_properties(Rotatables PROPERTIES
 )
 
 add_custom_command(TARGET Rotatables POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory
-            "$<TARGET_BUNDLE_DIR:Rotatables>/Contents/Resources/shaders"
-    COMMAND ${CMAKE_COMMAND} -E copy
-            "${SHADER_OUTPUT}"
-            "$<TARGET_BUNDLE_DIR:Rotatables>/Contents/Resources/shaders/scene.metal"
     COMMAND ${CMAKE_COMMAND} -E remove_directory
             "$<TARGET_BUNDLE_DIR:Rotatables>/Contents/Frameworks/SDL3.framework"
     COMMAND ditto

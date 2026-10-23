@@ -13,11 +13,13 @@ Specifications:
   with SDL3, metal-cpp, and Slang.
 - [02-Rotatables](Games/02-Rotatables/README.md) — rotating A and B neighbors
   with selectable, independently cycling procedural skins.
+- [03-SpaceBattle](Games/03-SpaceBattle/README.md) — a procedural 3D X-Wing
+  trench-run demo with Death Star destruction, hyperspace, and a gauntlet.
 
 ## Development
 
 Commits run tracked local checks from `.githooks/pre-commit`: formatting,
-include cleanup, and a warnings-as-errors build. Either game's `run.sh`
+include cleanup, and a warnings-as-errors build. Any game's `run.sh`
 installs the hook automatically, or run `Tools/install-hooks.sh` directly.
 Manual check and fix commands are documented in the
 [Barebones README](Games/01-Barebones/README.md#local-checks-and-auto-fixes).
