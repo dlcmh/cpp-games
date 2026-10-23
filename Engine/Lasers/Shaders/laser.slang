@@ -35,14 +35,15 @@ VSOutput vertexMain(uint vertexID : SV_VertexID)
 float3 beamColor(ScreenBeam beam, float distance, float t, float halfWidth)
 {
     const float x = distance / max(halfWidth, 0.00001);
-    const float core = exp(-x * 3.6);
-    const float glow = exp(-x * 1.25);
-    const float endFade = smoothstep(0.0, 0.09, t) * smoothstep(1.0, 0.88, t);
-    const float pulse = 0.86 + 0.14 * sin(t * 32.0 + beam.color.a * 12.0);
+    const float core = exp(-x * 3.2);
+    const float glow = exp(-x * 1.05);
+    const float halo = exp(-x * 0.26) * 0.16;
+    const float endFade = smoothstep(0.0, 0.12, t) * smoothstep(1.0, 0.82, t);
+    const float pulse = 0.87 + 0.13 * sin(t * 30.0 + beam.color.a * 12.0);
     const int style = int(beam.params.z + 0.5);
 
-    float3 color = beam.color.rgb * glow * (0.7 + smoothstep(0.62, 1.0, t) * 0.7) * pulse +
-                   lerp(beam.color.rgb, float3(1.0), 0.62) * core * 1.9;
+    float3 color = beam.color.rgb * (glow * (0.74 + smoothstep(0.62, 1.0, t) * 0.7) + halo) * pulse +
+                   lerp(beam.color.rgb, float3(1.0), 0.66) * core * 2.2;
     color *= beam.params.w * endFade;
 
     if (style == 1) {

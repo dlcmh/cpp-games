@@ -1,7 +1,8 @@
 # X-Wing Laser Lab
 
-A standalone demo for the shared X-Wing laser renderer, with the same cockpit
-overlay used by SpaceBattle.
+A focused demo for the shared X-Wing laser renderer, with the same cockpit
+overlay used by SpaceBattle. It fires one bolt type modeled on the X-Wing's
+red-orange cannon lasers.
 
 ![X-Wing Laser Lab](Docs/screenshot.png)
 
@@ -23,9 +24,6 @@ The app bundle is written to
 | Input | Action |
 | --- | --- |
 | `Space` | Fire a dual volley |
-| `1`–`4` | X-Wing red, TIE green, Ion blue, Heavy plasma |
-| `[` / `]` | Decrease/increase beam width |
-| `-` / `=` | Decrease/increase bolt speed |
 | `T` | Toggle auto-fire |
 | `P` | Pause |
 | `C` | Toggle the cockpit overlay |
@@ -33,15 +31,15 @@ The app bundle is written to
 | `F` / `F11` | Fullscreen |
 | `Esc` / `Q` | Quit |
 
-The window title reports the style, width/speed multipliers, bolt count, and
-whether auto-fire is active.
+The window title reports whether auto-fire is active, the current bolt count, and
+whether the cockpit overlay is visible.
 
 ## Architecture
 
 - [`Engine/Lasers`](../../../../Engine/Lasers/README.md) — shared `LaserBeam`
   data, `LaserRenderer`, and `laser.slang`.
 - [`Sources/Demo/LaserDemo.cpp`](Sources/Demo/LaserDemo.cpp) — demo timing,
-  bolt motion, style/width/speed controls, and cockpit state. No Metal.
+  bolt motion, and cockpit state. No Metal.
 - [`Sources/Platform/macOS/LaserLabRenderer.cpp`](Sources/Platform/macOS/LaserLabRenderer.cpp)
   — owns the SDL Metal layer, the procedural backdrop, the shared laser pass,
   and the shared cockpit overlay.

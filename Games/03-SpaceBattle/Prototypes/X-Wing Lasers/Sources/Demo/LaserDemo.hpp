@@ -26,9 +26,6 @@ public:
     void update(float deltaSeconds);
 
     void fire();
-    void setStyle(int oneBasedStyle);
-    void adjustWidth(float delta);
-    void adjustSpeed(float delta);
     void toggleAuto();
     void togglePause();
     void toggleCockpit();
@@ -43,9 +40,6 @@ private:
 
     std::vector<LaserBolt> bolts_;
     cppgames::cockpit::CockpitState cockpit_{};
-    int style_{0};
-    float widthScale_{1.0f};
-    float speedScale_{1.0f};
     bool autoFire_{true};
     bool paused_{false};
     bool showCockpit_{true};

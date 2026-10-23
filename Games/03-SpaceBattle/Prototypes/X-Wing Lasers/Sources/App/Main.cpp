@@ -125,24 +125,6 @@ int main(int argc, char* argv[]) {
                 case SDLK_SPACE:
                     demo.fire();
                     break;
-                case SDLK_1:
-                case SDLK_2:
-                case SDLK_3:
-                case SDLK_4:
-                    demo.setStyle(event.key.key - SDLK_0);
-                    break;
-                case SDLK_LEFTBRACKET:
-                    demo.adjustWidth(-0.1f);
-                    break;
-                case SDLK_RIGHTBRACKET:
-                    demo.adjustWidth(0.1f);
-                    break;
-                case SDLK_MINUS:
-                    demo.adjustSpeed(-0.1f);
-                    break;
-                case SDLK_EQUALS:
-                    demo.adjustSpeed(0.1f);
-                    break;
                 case SDLK_T:
                     demo.toggleAuto();
                     break;

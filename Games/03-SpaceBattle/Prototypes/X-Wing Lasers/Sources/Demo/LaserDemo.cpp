@@ -10,27 +10,6 @@
 namespace laserlab {
 namespace {
 
-constexpr const char* kStyleNames[] = {"X-Wing red", "TIE green", "Ion blue", "Heavy plasma"};
-
-struct StyleParameters {
-    float color[3];
-    float width;
-    float intensity;
-};
-
-StyleParameters styleParameters(int style) {
-    switch (style) {
-        case 0:
-            return {{1.0f, 0.18f, 0.07f}, 0.060f, 1.0f};
-        case 1:
-            return {{0.32f, 1.0f, 0.35f}, 0.050f, 0.95f};
-        case 2:
-            return {{0.30f, 0.62f, 1.0f}, 0.070f, 1.1f};
-        default:
-            return {{1.0f, 0.52f, 0.10f}, 0.120f, 1.25f};
-    }
-}
-
 float boltT(float travel) {
     return std::clamp(travel / 120.0f, 0.0f, 1.0f);
 }
@@ -58,14 +37,14 @@ void LaserDemo::update(float deltaSeconds) {
 
     if (autoFire_) {
         autoFireTimer_ += deltaSeconds;
-        if (autoFireTimer_ > 0.52f) {
+        if (autoFireTimer_ > 0.62f) {
             spawnVolley();
             autoFireTimer_ = 0.0f;
         }
     }
 
     for (LaserBolt& bolt : bolts_) {
-        bolt.travel += bolt.speed * speedScale_ * deltaSeconds;
+        bolt.travel += bolt.speed * deltaSeconds;
     }
     bolts_.erase(std::remove_if(bolts_.begin(), bolts_.end(),
                                 [](const LaserBolt& bolt) { return bolt.travel > 125.0f; }),
@@ -75,18 +54,6 @@ void LaserDemo::update(float deltaSeconds) {
 void LaserDemo::fire() {
     spawnVolley();
     cockpit_.firing = 1.0f;
-}
-
-void LaserDemo::setStyle(int oneBasedStyle) {
-    style_ = std::clamp(oneBasedStyle, 1, 4) - 1;
-}
-
-void LaserDemo::adjustWidth(float delta) {
-    widthScale_ = std::clamp(widthScale_ + delta, 0.4f, 2.5f);
-}
-
-void LaserDemo::adjustSpeed(float delta) {
-    speedScale_ = std::clamp(speedScale_ + delta, 0.4f, 2.0f);
 }
 
 void LaserDemo::toggleAuto() {
@@ -105,9 +72,6 @@ void LaserDemo::reset() {
     bolts_.clear();
     cockpit_ = cppgames::cockpit::CockpitState{};
     cockpit_.glassTint = 0.08f;
-    style_ = 0;
-    widthScale_ = 1.0f;
-    speedScale_ = 1.0f;
     autoFire_ = true;
     paused_ = false;
     showCockpit_ = true;
@@ -122,7 +86,6 @@ const cppgames::cockpit::CockpitState& LaserDemo::cockpitState() const noexcept 
 std::vector<cppgames::lasers::LaserBeam> LaserDemo::beams() const {
     std::vector<cppgames::lasers::LaserBeam> result;
     result.reserve(bolts_.size());
-    const StyleParameters style = styleParameters(style_);
 
     for (const LaserBolt& bolt : bolts_) {
         const float t0 = boltT(bolt.travel);
@@ -139,12 +102,12 @@ std::vector<cppgames::lasers::LaserBeam> LaserDemo::beams() const {
         beam.end[0] = x1;
         beam.end[1] = y1;
         beam.end[2] = -4.0f - bolt.travel - bolt.length;
-        beam.width = style.width * widthScale_;
-        beam.color[0] = style.color[0];
-        beam.color[1] = style.color[1];
-        beam.color[2] = style.color[2];
-        beam.intensity = style.intensity;
-        beam.style = style_;
+        beam.width = 0.10f;
+        beam.color[0] = 1.0f;
+        beam.color[1] = 0.13f;
+        beam.color[2] = 0.035f;
+        beam.intensity = 1.2f;
+        beam.style = 0;
         beam.seed = bolt.seed;
         result.push_back(beam);
     }
@@ -153,11 +116,7 @@ std::vector<cppgames::lasers::LaserBeam> LaserDemo::beams() const {
 
 std::string LaserDemo::windowTitle() const {
     char title[320];
-    std::snprintf(title, sizeof(title),
-                  "X-Wing Laser Lab - %s | width %.2fx | speed %.2fx | %s | "
-                  "bolts %zu | Cockpit %s",
-                  kStyleNames[style_], static_cast<double>(widthScale_),
-                  static_cast<double>(speedScale_),
+    std::snprintf(title, sizeof(title), "X-Wing Laser Lab | %s | bolts %zu | Cockpit %s",
                   paused_ ? "PAUSED" : (autoFire_ ? "AUTO" : "MANUAL"), bolts_.size(),
                   showCockpit_ ? "on" : "off");
     return title;
@@ -171,8 +130,8 @@ void LaserDemo::spawnVolley() {
     for (int side = -1; side <= 1; side += 2) {
         LaserBolt bolt{};
         bolt.side = side;
-        bolt.speed = 36.0f;
-        bolt.length = 7.0f;
+        bolt.speed = 30.0f;
+        bolt.length = 8.0f;
         bolt.seed = cockpit_.time * 0.73f + static_cast<float>(side) * 11.0f + bolt.travel;
         bolts_.push_back(bolt);
     }
