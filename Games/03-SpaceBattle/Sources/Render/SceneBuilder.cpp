@@ -35,11 +35,10 @@ void setCamera(RenderFrame& frame, Vec3 eye, Vec3 target, Vec3 up, float fovY = 
     frame.camera.fovYRadians = fovY;
 }
 
-// Points the camera so anchor projects to the given NDC position. The cockpit
-// reticle is at (ndcX, 0.07), so this is what keeps the exhaust port centred in
-// the HUD instead of approximately near it.
-void setCameraToNdc(RenderFrame& frame, Vec3 eye, Vec3 anchor, Vec3 up, float fovY, float ndcX,
-                    float ndcY) {
+// Direction that places anchor at the given NDC position. The cockpit reticle
+// is at (ndcX, 0.07), so this keeps the exhaust port exactly on the HUD.
+Vec3 ndcAimDirection(const RenderFrame& frame, Vec3 eye, Vec3 anchor, Vec3 up, float fovY,
+                     float ndcX, float ndcY) {
     const float aspect = frame.pixelHeight > 0 ? static_cast<float>(frame.pixelWidth) /
                                                      static_cast<float>(frame.pixelHeight)
                                                : 1.777f;
@@ -50,8 +49,7 @@ void setCameraToNdc(RenderFrame& frame, Vec3 eye, Vec3 anchor, Vec3 up, float fo
     const Vec3 toAnchor = normalize(anchor - eye);
     const Vec3 right0 = normalize(cross(toAnchor, up));
     const Vec3 up0 = normalize(cross(right0, toAnchor));
-    const Vec3 direction = normalize(toAnchor - right0 * tanX - up0 * tanY);
-    setCamera(frame, eye, eye + direction, up, fovY);
+    return normalize(toAnchor - right0 * tanX - up0 * tanY);
 }
 
 CameraBasis cameraBasis(const RenderFrame& frame) {
@@ -212,7 +210,7 @@ void buildApproach(const BattleState& state, RenderFrame& frame) {
 
 void buildTrench(const BattleState& state, RenderFrame& frame) {
     const float t = state.phaseTime;
-    const float cameraZ = 20.0f - t * 40.0f;
+    const float cameraZ = 20.0f - std::min(t, 10.0f) * 40.0f;
     Vec3 eye{state.steer * 1.9f + std::sin(t * 0.9f) * 0.55f, 0.25f + std::sin(t * 1.2f) * 0.08f,
              cameraZ};
     const float settleT = std::clamp(t / 1.2f, 0.0f, 1.0f);
@@ -222,8 +220,16 @@ void buildTrench(const BattleState& state, RenderFrame& frame) {
                                                      static_cast<float>(frame.pixelHeight)
                                                : 1.777f;
     const float reticleX = -state.steer * cppgames::cockpit::kReticleSteerShift / aspect;
-    setCameraToNdc(frame, eye, {0.0f, -1.60f, -420.0f}, {0.0f, 1.0f, 0.0f}, 1.08f, reticleX,
-                   cppgames::cockpit::kReticleCenterY);
+    const Vec3 portCentre{0.0f, -1.60f, -420.0f};
+    const Vec3 aim = ndcAimDirection(frame, eye, portCentre, {0.0f, 1.0f, 0.0f}, 1.08f, reticleX,
+                                     cppgames::cockpit::kReticleCenterY);
+    const float pullT = std::clamp((t - 10.0f) / 1.8f, 0.0f, 1.0f);
+    const float pull = pullT * pullT * (3.0f - 2.0f * pullT);
+    const Vec3 pullAim = normalize(Vec3{0.0f, 0.82f, -1.0f});
+    const Vec3 viewDirection = normalize(aim + (pullAim - aim) * pull);
+    eye.y += pull * 24.0f;
+    eye.x += pull * 4.0f;
+    setCamera(frame, eye, eye + viewDirection, {0.0f, 1.0f, 0.0f}, 1.08f);
     addSky(frame);
     addPlanet(frame, {-100.0f, -55.0f, cameraZ - 360.0f}, 90.0f, state.elapsedSeconds * 0.02f);
 
@@ -277,11 +283,18 @@ void buildTrench(const BattleState& state, RenderFrame& frame) {
         addOpaque(frame, tower);
     }
 
-    // Torpedo shot in the final approach to the port.
-    if (t > 9.6f) {
-        addBeam(frame, eye + basis.up * -0.5f, eye + basis.forward * 65.0f, 0.2f,
-                {0.4f, 1.0f, 0.5f}, 1.0f, 2);
-        frame.flash = std::max(frame.flash, (t - 9.6f) * 0.12f);
+    // Torpedo run: fire into the port, then pull up and away instead of
+    // following the bolt into the station.
+    constexpr float kTorpedoLaunch = 7.8f;
+    constexpr float kTorpedoFlight = 2.2f;
+    if (t > kTorpedoLaunch) {
+        const float u = std::clamp((t - kTorpedoLaunch) / kTorpedoFlight, 0.0f, 1.0f);
+        const Vec3 launchPoint{0.0f, 0.0f, -292.0f};
+        const Vec3 torpedo = launchPoint + (portCentre - launchPoint) * u;
+        addBeam(frame, launchPoint, torpedo, 0.16f, {0.35f, 1.0f, 0.50f}, 1.0f, 2);
+        if (u >= 1.0f) {
+            frame.flash = std::max(frame.flash, 0.65f);
+        }
     }
     frame.flash = std::max(frame.flash, std::max(0.0f, 0.22f - t) * 3.5f);
 }

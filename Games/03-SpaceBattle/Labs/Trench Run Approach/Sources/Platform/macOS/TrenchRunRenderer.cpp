@@ -1,4 +1,4 @@
-#include "Platform/macOS/DeathStarLabRenderer.hpp"
+#include "Platform/macOS/TrenchRunRenderer.hpp"
 
 #include "Cockpit/CockpitOverlay.hpp"
 #include "Cockpit/CockpitState.hpp"
@@ -21,7 +21,7 @@
 #include <string>
 #include <vector>
 
-namespace deathstarlab {
+namespace trenchrunlab {
 namespace {
 
 using spacebattle::identity;
@@ -67,9 +67,13 @@ CameraPose approachCamera(float phaseTime) {
 CameraPose trenchCamera(float phaseTime) {
     const float settle = std::clamp(phaseTime / 1.2f, 0.0f, 1.0f);
     const float smoothSettle = settle * settle * (3.0f - 2.0f * settle);
-    const float z = 20.0f - phaseTime * 28.0f;
-    const Vec3 eye{0.0f, 7.5f + (-7.25f) * smoothSettle, z};
-    return {eye, eye + Vec3{0.0f, -0.02f, -1.0f}, {0.0f, 1.0f, 0.0f}, 1.08f};
+    const float run = std::min(phaseTime, 6.8f);
+    const float pullT = std::clamp((phaseTime - 9.0f) / 1.5f, 0.0f, 1.0f);
+    const float pull = pullT * pullT * (3.0f - 2.0f * pullT);
+    const Vec3 eye{0.0f, (7.5f + (-7.25f) * smoothSettle) + pull * 38.0f,
+                   (20.0f - run * 50.0f) - pull * 15.0f};
+    const Vec3 forward = normalize(Vec3{0.0f, -0.02f + pull * 0.87f, -1.0f});
+    return {eye, eye + forward, {0.0f, 1.0f, 0.0f}, 1.08f};
 }
 
 void addSky(std::vector<DrawItem>& items, Vec3 cameraPosition) {
@@ -90,7 +94,7 @@ void addApproachScene(std::vector<DrawItem>& items, const CameraPose& camera, fl
     items.push_back(deathStar);
 }
 
-void addTrenchScene(std::vector<DrawItem>& items, const CameraPose& camera) {
+void addTrenchScene(std::vector<DrawItem>& items, const CameraPose& camera, float phaseTime) {
     addSky(items, camera.eye);
 
     DrawItem trench{};
@@ -101,9 +105,38 @@ void addTrenchScene(std::vector<DrawItem>& items, const CameraPose& camera) {
     DrawItem port{};
     port.mesh = MeshId::Sphere;
     port.material = Material::Emissive;
-    port.transform = translation({0.0f, -3.15f, -430.0f}) * scaling(3.4f);
+    const Vec3 portCentre{0.0f, -3.15f, -430.0f};
+    port.transform = translation(portCentre) * scaling(3.4f);
     port.color = {0.30f, 1.0f, 0.50f};
     items.push_back(port);
+
+    // Torpedo run: launch at 7 s, hit the port, then leave the camera climbing
+    // away instead of following the bolt into the exhaust port.
+    constexpr float kLaunch = 6.8f;
+    constexpr float kFlight = 2.2f;
+    if (phaseTime > kLaunch) {
+        const float u = std::clamp((phaseTime - kLaunch) / kFlight, 0.0f, 1.0f);
+        const Vec3 from{0.0f, 0.25f, -320.0f};
+        const Vec3 torpedo = from + (portCentre - from) * u;
+        for (int i = 0; i < 4; ++i) {
+            DrawItem trail{};
+            trail.mesh = MeshId::Sphere;
+            trail.material = Material::Emissive;
+            trail.transform = translation(torpedo - (portCentre - from) * (float(i) * 0.012f)) *
+                              scaling(0.55f - float(i) * 0.10f);
+            trail.color = {0.30f, 1.0f, 0.50f};
+            items.push_back(trail);
+        }
+        if (u >= 1.0f) {
+            const float blast = std::clamp((phaseTime - kLaunch - kFlight) / 1.0f, 0.0f, 1.0f);
+            DrawItem burst{};
+            burst.mesh = MeshId::Sphere;
+            burst.material = Material::Emissive;
+            burst.transform = translation(portCentre) * scaling(2.0f + blast * 5.0f);
+            burst.color = {1.0f, 0.45f, 0.10f};
+            items.push_back(burst);
+        }
+    }
 
     for (int side = -1; side <= 1; side += 2) {
         DrawItem tower{};
@@ -118,7 +151,7 @@ void addTrenchScene(std::vector<DrawItem>& items, const CameraPose& camera) {
 
 }  // namespace
 
-struct DeathStarLabRenderer::Impl {
+struct TrenchRunRenderer::Impl {
     NS::SharedPtr<MTL::Device> device;
     NS::SharedPtr<MTL::CommandQueue> commandQueue;
     NS::SharedPtr<MTL::Buffer> vertexBuffer;
@@ -132,12 +165,12 @@ struct DeathStarLabRenderer::Impl {
     int pixelHeight{0};
 };
 
-DeathStarLabRenderer::DeathStarLabRenderer() : impl_(std::make_unique<Impl>()) {}
+TrenchRunRenderer::TrenchRunRenderer() : impl_(std::make_unique<Impl>()) {}
 
-DeathStarLabRenderer::~DeathStarLabRenderer() = default;
+TrenchRunRenderer::~TrenchRunRenderer() = default;
 
-bool DeathStarLabRenderer::initialize(const NativeSurface& surface,
-                                      const std::string& shaderDirectory, std::string& error) {
+bool TrenchRunRenderer::initialize(const NativeSurface& surface, const std::string& shaderDirectory,
+                                   std::string& error) {
     NS::AutoreleasePool* pool = NS::AutoreleasePool::alloc()->init();
 
     if (surface.metalLayer == nullptr) {
@@ -196,7 +229,7 @@ bool DeathStarLabRenderer::initialize(const NativeSurface& surface,
     return true;
 }
 
-void DeathStarLabRenderer::resize(int pixelWidth, int pixelHeight) {
+void TrenchRunRenderer::resize(int pixelWidth, int pixelHeight) {
     if (impl_->layer == nullptr || pixelWidth <= 0 || pixelHeight <= 0) {
         return;
     }
@@ -220,7 +253,7 @@ void DeathStarLabRenderer::resize(int pixelWidth, int pixelHeight) {
     descriptor->release();
 }
 
-bool DeathStarLabRenderer::draw(const RenderState& state, std::string& error) {
+bool TrenchRunRenderer::draw(const RenderState& state, std::string& error) {
     if (impl_->pixelWidth <= 0 || impl_->pixelHeight <= 0 || !impl_->depthTexture) {
         return true;
     }
@@ -242,7 +275,7 @@ bool DeathStarLabRenderer::draw(const RenderState& state, std::string& error) {
         if (state.phase == Phase::Approach) {
             addApproachScene(items, camera, state.time);
         } else {
-            addTrenchScene(items, camera);
+            addTrenchScene(items, camera, state.phaseTime);
         }
     }
 
@@ -331,4 +364,4 @@ bool DeathStarLabRenderer::draw(const RenderState& state, std::string& error) {
     return true;
 }
 
-}  // namespace deathstarlab
+}  // namespace trenchrunlab

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.25)
 
-project(DeathStarLab VERSION 0.1.0 LANGUAGES CXX OBJCXX)
+project(TrenchRunApproachLab VERSION 0.1.0 LANGUAGES CXX OBJCXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -10,7 +10,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(CPP_GAMES_WERROR "Treat compiler warnings as errors (used by the local check hook)" OFF)
 
 if(NOT APPLE)
-    message(FATAL_ERROR "Death Star Approach Lab currently targets macOS only.")
+    message(FATAL_ERROR "Trench Run Approach Lab currently targets macOS only.")
 endif()
 
 if(NOT DEFINED CPP_GAMES_DEPS_DIR)
@@ -62,28 +62,28 @@ add_custom_command(
     DEPENDS
         "${GAME_DIR}/Shaders/scene.slang"
         "${CPPGAMES_COCKPIT_SHADER}"
-    COMMENT "Compiling Death Star lab shaders to Metal"
+    COMMENT "Compiling trench run lab shaders to Metal"
     VERBATIM
 )
-add_custom_target(DeathStarLabShaders DEPENDS "${SCENE_METAL}" "${COCKPIT_METAL}")
+add_custom_target(TrenchRunApproachLabShaders DEPENDS "${SCENE_METAL}" "${COCKPIT_METAL}")
 
-add_executable(DeathStarLab
+add_executable(TrenchRunApproachLab
     Sources/App/Main.cpp
-    Sources/Platform/macOS/DeathStarLabRenderer.cpp
+    Sources/Platform/macOS/TrenchRunRenderer.cpp
     Sources/Platform/macOS/MetalImpl.mm
     "${GAME_DIR}/Sources/Platform/macOS/MeshLibrary.cpp"
     "${GAME_DIR}/Sources/Platform/macOS/Pipelines.cpp"
 )
 
-target_include_directories(DeathStarLab PRIVATE
+target_include_directories(TrenchRunApproachLab PRIVATE
     Sources
     "${GAME_DIR}/Sources"
 )
-target_compile_options(DeathStarLab PRIVATE -Wall -Wextra -Wpedantic)
+target_compile_options(TrenchRunApproachLab PRIVATE -Wall -Wextra -Wpedantic)
 if(CPP_GAMES_WERROR)
-    target_compile_options(DeathStarLab PRIVATE -Werror)
+    target_compile_options(TrenchRunApproachLab PRIVATE -Werror)
 endif()
-target_link_libraries(DeathStarLab PRIVATE
+target_link_libraries(TrenchRunApproachLab PRIVATE
     SDL3
     metal-cpp
     cppgames_cockpit
@@ -92,39 +92,39 @@ target_link_libraries(DeathStarLab PRIVATE
     "${FOUNDATION_FRAMEWORK}"
 )
 
-add_dependencies(DeathStarLab DeathStarLabShaders)
+add_dependencies(TrenchRunApproachLab TrenchRunApproachLabShaders)
 
-add_custom_target(DeathStarLabResources ALL
+add_custom_target(TrenchRunApproachLabResources ALL
     COMMAND ${CMAKE_COMMAND} -E make_directory
-            "$<TARGET_BUNDLE_DIR:DeathStarLab>/Contents/Resources/shaders"
+            "$<TARGET_BUNDLE_DIR:TrenchRunApproachLab>/Contents/Resources/shaders"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${SCENE_METAL}"
-            "$<TARGET_BUNDLE_DIR:DeathStarLab>/Contents/Resources/shaders/scene.metal"
+            "$<TARGET_BUNDLE_DIR:TrenchRunApproachLab>/Contents/Resources/shaders/scene.metal"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${COCKPIT_METAL}"
-            "$<TARGET_BUNDLE_DIR:DeathStarLab>/Contents/Resources/shaders/cockpit.metal"
+            "$<TARGET_BUNDLE_DIR:TrenchRunApproachLab>/Contents/Resources/shaders/cockpit.metal"
     DEPENDS "${SCENE_METAL}" "${COCKPIT_METAL}"
-    COMMENT "Bundling Death Star lab shaders"
+    COMMENT "Bundling trench run lab shaders"
     VERBATIM
 )
-add_dependencies(DeathStarLab DeathStarLabResources)
+add_dependencies(TrenchRunApproachLab TrenchRunApproachLabResources)
 
-set_target_properties(DeathStarLab PROPERTIES
+set_target_properties(TrenchRunApproachLab PROPERTIES
     MACOSX_BUNDLE TRUE
-    MACOSX_BUNDLE_BUNDLE_NAME "Death Star Approach Lab"
-    MACOSX_BUNDLE_GUI_IDENTIFIER "com.dlcmh.cppgames.deathstarlab"
+    MACOSX_BUNDLE_BUNDLE_NAME "Trench Run Approach Lab"
+    MACOSX_BUNDLE_GUI_IDENTIFIER "com.dlcmh.cppgames.trenchrunlab"
     MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
     MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
     BUILD_RPATH "@executable_path/../Frameworks"
     XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME NO
 )
 
-add_custom_command(TARGET DeathStarLab POST_BUILD
+add_custom_command(TARGET TrenchRunApproachLab POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E remove_directory
-            "$<TARGET_BUNDLE_DIR:DeathStarLab>/Contents/Frameworks/SDL3.framework"
+            "$<TARGET_BUNDLE_DIR:TrenchRunApproachLab>/Contents/Frameworks/SDL3.framework"
     COMMAND ditto
             "${SDL3_FRAMEWORK}"
-            "$<TARGET_BUNDLE_DIR:DeathStarLab>/Contents/Frameworks/SDL3.framework"
-    COMMENT "Bundling Death Star lab SDL3.framework"
+            "$<TARGET_BUNDLE_DIR:TrenchRunApproachLab>/Contents/Frameworks/SDL3.framework"
+    COMMENT "Bundling trench run lab SDL3.framework"
     VERBATIM
 )

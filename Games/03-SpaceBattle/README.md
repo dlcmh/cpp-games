@@ -14,7 +14,7 @@ files, or image assets; the meshes and surface detail are generated in code.
 | Phase | Length | What happens |
 | --- | --- | --- |
 | Death Star approach | 7 s | Planet and orbiting battle station fill the canopy; TIEs and laser fire cross the view. |
-| Trench run | 11 s | The camera threads a procedural trench toward the exhaust port. |
+| Trench run | 12 s | The camera threads the trench, fires a torpedo into the exhaust port, then pulls up. |
 | Death Star destroyed | 4.5 s | An external cut shows the station erupt; debris and a flash sell the hit. |
 | Hyperspace jump | 2.8 s | Star streaks and cockpit lighting transition to the next objective. |
 | Asteroid gauntlet | 11 s | A Star Destroyer, asteroids, TIEs, and turbolaser fire make up the escape corridor. |
@@ -187,7 +187,7 @@ build; shader-only edits do not require a relink.
 │   ├── X-Wing Cockpit/      # standalone cockpit lab, same shared module
 │   ├── X-Wing Lasers/       # standalone laser lab, same shared module
 │   ├── Planet Lab/          # standalone seeded procedural planet lab
-│   └── Death Star Approach/ # approach-to-trench camera lab
+│   └── Trench Run Approach/ # approach-to-trench camera lab
 ├── Shaders/
 │   └── scene.slang          # 3D world, procedural materials, sky
 ├── ThirdParty/

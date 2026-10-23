@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Build and launch the Death Star approach lab.
+# Build and launch the trench run approach lab.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../../../.." && pwd)"
 
 DEPS_DIR="${CPP_GAMES_DEPS_DIR:-${HOME}/Library/Caches/cpp-games/deps}"
-BUILD_DIR="${DEATH_STAR_LAB_BUILD_DIR:-/tmp/cpp-games-labs-death-star-build}"
+BUILD_DIR="${TRENCH_RUN_LAB_BUILD_DIR:-/tmp/cpp-games-labs-trench-run-build}"
 BUILD_ONLY=0
 STATS=0
 
@@ -22,7 +22,7 @@ Options:
 
 Environment:
   CPP_GAMES_DEPS_DIR       Dependency cache (default: ~/Library/Caches/cpp-games/deps)
-  DEATH_STAR_LAB_BUILD_DIR Build directory (default: /tmp/cpp-games-labs-death-star-build)
+  TRENCH_RUN_LAB_BUILD_DIR Build directory (default: /tmp/cpp-games-labs-trench-run-build)
 USAGE
 }
 
@@ -65,7 +65,7 @@ if [[ -f "${BUILD_DIR}/compile_commands.json" ]]; then
     cp "${BUILD_DIR}/compile_commands.json" "${SCRIPT_DIR}/compile_commands.json"
 fi
 
-APP="${BUILD_DIR}/DeathStarLab.app"
+APP="${BUILD_DIR}/TrenchRunApproachLab.app"
 if [[ ! -d "${APP}" ]]; then
     echo "Build succeeded, but ${APP} was not found." >&2
     exit 1
@@ -77,7 +77,7 @@ if [[ "${BUILD_ONLY}" -eq 1 ]]; then
 fi
 
 if [[ "${STATS}" -eq 1 ]]; then
-    exec "${REPO_ROOT}/Tools/run-with-stats.sh" "${APP}/Contents/MacOS/DeathStarLab"
+    exec "${REPO_ROOT}/Tools/run-with-stats.sh" "${APP}/Contents/MacOS/TrenchRunApproachLab"
 fi
 
-exec "${APP}/Contents/MacOS/DeathStarLab"
+exec "${APP}/Contents/MacOS/TrenchRunApproachLab"

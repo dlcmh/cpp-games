@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 
-namespace deathstarlab {
+namespace trenchrunlab {
 
 struct NativeSurface {
     void* metalLayer{nullptr};
@@ -23,12 +23,12 @@ struct RenderState {
     bool cockpitVisible{true};
 };
 
-class DeathStarLabRenderer {
+class TrenchRunRenderer {
 public:
-    DeathStarLabRenderer();
-    ~DeathStarLabRenderer();
-    DeathStarLabRenderer(const DeathStarLabRenderer&) = delete;
-    DeathStarLabRenderer& operator=(const DeathStarLabRenderer&) = delete;
+    TrenchRunRenderer();
+    ~TrenchRunRenderer();
+    TrenchRunRenderer(const TrenchRunRenderer&) = delete;
+    TrenchRunRenderer& operator=(const TrenchRunRenderer&) = delete;
 
     bool initialize(const NativeSurface& surface, const std::string& shaderDirectory,
                     std::string& error);
@@ -40,4 +40,4 @@ private:
     std::unique_ptr<Impl> impl_;
 };
 
-}  // namespace deathstarlab
+}  // namespace trenchrunlab

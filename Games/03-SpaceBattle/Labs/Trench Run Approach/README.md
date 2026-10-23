@@ -1,4 +1,4 @@
-# Death Star Approach Lab
+# Trench Run Approach Lab
 
 A standalone camera lab for the SpaceBattle opening:
 
@@ -8,11 +8,13 @@ A standalone camera lab for the SpaceBattle opening:
    covers the hand-off.
 3. **Trench run** — the camera settles into the equatorial trench and runs
    forward over the panel floor and ribs.
+4. **Torpedo and pull-out** — a torpedo drops into the exhaust port, and the
+   camera climbs away instead of following it in.
 
-The loop lasts thirteen seconds: four seconds of approach, then nine seconds of
-trench run.
+The loop lasts fourteen and a half seconds: four seconds of approach, a
+two-point-two-second torpedo animation, then a pull-out.
 
-![Death Star approach](Docs/screenshot.png)
+![Torpedo run through the trench](Docs/screenshot.png)
 
 ## Controls
 
@@ -34,7 +36,7 @@ trench run.
 
 Dependencies are shared with the other projects in
 `~/Library/Caches/cpp-games/deps`. The default build directory is
-`/tmp/cpp-games-labs-death-star-build`.
+`/tmp/cpp-games-labs-trench-run-build`.
 
 ## Architecture
 

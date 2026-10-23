@@ -9,7 +9,7 @@ namespace spacebattle {
 namespace {
 
 constexpr float kApproachDuration = 7.0f;
-constexpr float kTrenchDuration = 11.0f;
+constexpr float kTrenchDuration = 12.0f;
 constexpr float kExplosionDuration = 4.5f;
 constexpr float kJumpDuration = 2.8f;
 constexpr float kGauntletDuration = 11.0f;

@@ -1,7 +1,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_metal.h>
 
-#include "Platform/macOS/DeathStarLabRenderer.hpp"
+#include "Platform/macOS/TrenchRunRenderer.hpp"
 
 #include <algorithm>
 #include <cstdio>
@@ -20,7 +20,7 @@ void logError(const std::string& context) {
 }
 
 std::filesystem::path resolveShaderDirectory() {
-    if (const char* overridePath = std::getenv("DEATH_STAR_LAB_SHADER_DIR")) {
+    if (const char* overridePath = std::getenv("TRENCH_RUN_LAB_SHADER_DIR")) {
         return overridePath;
     }
     if (const char* basePath = SDL_GetBasePath()) {
@@ -34,12 +34,15 @@ std::filesystem::path resolveShaderDirectory() {
     return "Shaders";
 }
 
-void updateTitle(SDL_Window* window, deathstarlab::Phase phase, float phaseTime, bool paused,
+void updateTitle(SDL_Window* window, trenchrunlab::Phase phase, float phaseTime, bool paused,
                  bool cockpit) {
     char title[256];
-    std::snprintf(title, sizeof(title), "Death Star Approach Lab | %s %.1fs | %s | Cockpit %s",
-                  phase == deathstarlab::Phase::Approach ? "APPROACH" : "TRENCH RUN",
-                  static_cast<double>(phaseTime), paused ? "PAUSED" : "PLAYING",
+    const char* phaseLabel =
+        phase == trenchrunlab::Phase::Approach
+            ? "APPROACH"
+            : (phaseTime > 9.0f ? "PULL OUT" : (phaseTime > 6.8f ? "TORPEDO" : "TRENCH RUN"));
+    std::snprintf(title, sizeof(title), "Trench Run Approach Lab | %s %.1fs | %s | Cockpit %s",
+                  phaseLabel, static_cast<double>(phaseTime), paused ? "PAUSED" : "PLAYING",
                   cockpit ? "on" : "off");
     static std::string previous;
     if (title != previous) {
@@ -54,7 +57,7 @@ int main(int argc, char* argv[]) {
     (void)argc;
     (void)argv;
 
-    SDL_SetAppMetadata("Death Star Approach Lab", "0.1.0", "com.dlcmh.cppgames.deathstarlab");
+    SDL_SetAppMetadata("Trench Run Approach Lab", "0.1.0", "com.dlcmh.cppgames.trenchrunlab");
     SDL_SetHint(SDL_HINT_RENDER_DRIVER, "metal");
     SDL_SetHint(SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN, "1");
 
@@ -64,7 +67,7 @@ int main(int argc, char* argv[]) {
     }
 
     SDL_Window* window =
-        SDL_CreateWindow("Death Star Approach Lab", kInitialWindowWidth, kInitialWindowHeight,
+        SDL_CreateWindow("Trench Run Approach Lab", kInitialWindowWidth, kInitialWindowHeight,
                          SDL_WINDOW_METAL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
     if (window == nullptr) {
         logError("SDL_CreateWindow failed");
@@ -86,9 +89,9 @@ int main(int argc, char* argv[]) {
     int pixelHeight = 0;
     SDL_GetWindowSizeInPixels(window, &pixelWidth, &pixelHeight);
 
-    deathstarlab::DeathStarLabRenderer renderer;
+    trenchrunlab::TrenchRunRenderer renderer;
     std::string rendererError;
-    const deathstarlab::NativeSurface surface{metalLayer, pixelWidth, pixelHeight};
+    const trenchrunlab::NativeSurface surface{metalLayer, pixelWidth, pixelHeight};
     if (!renderer.initialize(surface, resolveShaderDirectory().string(), rendererError)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Renderer initialization failed: %s",
                      rendererError.c_str());
@@ -101,8 +104,8 @@ int main(int argc, char* argv[]) {
     SDL_ShowWindow(window);
     SDL_RaiseWindow(window);
 
-    deathstarlab::RenderState state{};
-    state.phase = deathstarlab::Phase::Approach;
+    trenchrunlab::RenderState state{};
+    state.phase = trenchrunlab::Phase::Approach;
     state.phaseTime = 0.0f;
     state.time = 0.0f;
     state.cockpitVisible = true;
@@ -130,7 +133,7 @@ int main(int argc, char* argv[]) {
                     running = false;
                     break;
                 case SDLK_SPACE:
-                    state.phase = deathstarlab::Phase::Approach;
+                    state.phase = trenchrunlab::Phase::Approach;
                     state.phaseTime = 0.0f;
                     break;
                 case SDLK_P:
@@ -161,13 +164,13 @@ int main(int argc, char* argv[]) {
         if (!paused) {
             state.time += deltaSeconds;
             state.phaseTime += deltaSeconds;
-            const float duration = state.phase == deathstarlab::Phase::Approach ? 4.0f : 9.0f;
+            const float duration = state.phase == trenchrunlab::Phase::Approach ? 4.0f : 10.5f;
             if (state.phaseTime >= duration) {
-                if (state.phase == deathstarlab::Phase::Approach) {
-                    state.phase = deathstarlab::Phase::Trench;
+                if (state.phase == trenchrunlab::Phase::Approach) {
+                    state.phase = trenchrunlab::Phase::Trench;
                     state.phaseTime = 0.0f;
                 } else {
-                    state.phase = deathstarlab::Phase::Approach;
+                    state.phase = trenchrunlab::Phase::Approach;
                     state.phaseTime = 0.0f;
                 }
             }
