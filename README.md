@@ -24,6 +24,8 @@ Specifications:
   — the interactive laser lab for SpaceBattle.
 - [Planet Lab](Games/03-SpaceBattle/Labs/Planet%20Lab/README.md) — a seeded
   procedural planet generator sharing its renderer with SpaceBattle.
+- [Death Star Approach Lab](Games/03-SpaceBattle/Labs/Death%20Star%20Approach/README.md)
+  — the approach-to-trench camera sequence with the game's Death Star shader.
 - Shared cockpit module: [Engine/Cockpit](Engine/Cockpit/README.md).
 - Shared laser module: [Engine/Lasers](Engine/Lasers/README.md).
 - Shared planet module: [Engine/Planets](Engine/Planets/README.md).
