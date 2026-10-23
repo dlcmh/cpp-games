@@ -44,22 +44,31 @@ find_library(METAL_FRAMEWORK Metal REQUIRED)
 find_library(QUARTZCORE_FRAMEWORK QuartzCore REQUIRED)
 find_library(FOUNDATION_FRAMEWORK Foundation REQUIRED)
 
-set(SHADER1 "${CMAKE_BINARY_DIR}/generated/1.metal")
-set(SHADER2 "${CMAKE_BINARY_DIR}/generated/2.metal")
-add_custom_command(
-    OUTPUT "${SHADER1}" "${SHADER2}"
-    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/generated"
-    COMMAND "${SLANGC}" "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/1.slang"
-            -target metal -entry vertexMain -entry fragmentMain -o "${SHADER1}"
-    COMMAND "${SLANGC}" "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/2.slang"
-            -target metal -entry vertexMain -entry fragmentMain -o "${SHADER2}"
-    DEPENDS
-        "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/1.slang"
-        "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/2.slang"
-    COMMENT "Compiling Slang shader examples to Metal"
-    VERBATIM
-)
-add_custom_target(ShadersShaders DEPENDS "${SHADER1}" "${SHADER2}")
+file(GLOB SHADER_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/*.slang")
+
+set(SHADER_OUTPUTS)
+set(SHADER_RESOURCE_COMMANDS)
+foreach(shader IN LISTS SHADER_SOURCES)
+    get_filename_component(shader_name "${shader}" NAME_WE)
+    set(output "${CMAKE_BINARY_DIR}/generated/${shader_name}.metal")
+    add_custom_command(
+        OUTPUT "${output}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/generated"
+        COMMAND "${SLANGC}" "${shader}"
+                -target metal -entry vertexMain -entry fragmentMain -o "${output}"
+        DEPENDS "${shader}"
+        COMMENT "Compiling ${shader_name}.slang to Metal"
+        VERBATIM
+    )
+    list(APPEND SHADER_OUTPUTS "${output}")
+    list(APPEND SHADER_RESOURCE_COMMANDS
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${output}"
+                "$<TARGET_BUNDLE_DIR:Shaders>/Contents/Resources/shaders/${shader_name}.metal"
+    )
+endforeach()
+
+add_custom_target(ShadersShaders DEPENDS ${SHADER_OUTPUTS})
 
 add_executable(Shaders
     Sources/App/Main.cpp
@@ -81,13 +90,8 @@ add_dependencies(Shaders ShadersShaders)
 add_custom_target(ShadersResources ALL
     COMMAND ${CMAKE_COMMAND} -E make_directory
             "$<TARGET_BUNDLE_DIR:Shaders>/Contents/Resources/shaders"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${SHADER1}"
-            "$<TARGET_BUNDLE_DIR:Shaders>/Contents/Resources/shaders/1.metal"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${SHADER2}"
-            "$<TARGET_BUNDLE_DIR:Shaders>/Contents/Resources/shaders/2.metal"
-    DEPENDS "${SHADER1}" "${SHADER2}"
+    ${SHADER_RESOURCE_COMMANDS}
+    DEPENDS ${SHADER_OUTPUTS}
     COMMENT "Bundling shader examples"
     VERBATIM
 )

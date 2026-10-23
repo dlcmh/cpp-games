@@ -24,6 +24,34 @@ Both shaders use a shared `Uniforms` struct containing the pixel resolution and
 time. The C++ side compiles the Slang shader to Metal at build time, then loads
 the generated `.metal` source at runtime.
 
+## Adding another example
+
+Adding an example only needs a new shader file:
+
+1. Copy `Shaders/2.slang` to `Shaders/3.slang`.
+2. Change the fragment code.
+3. Run:
+
+```sh
+./run.sh 3
+```
+
+That is it. The CMake build globs `Shaders/*.slang`, compiles each one to
+`3.metal`, and bundles it with the app. `run.sh` passes the number to the app,
+which loads `<number>.metal` by name.
+
+A shader needs these two entry points:
+
+```slang
+[shader("vertex")]
+VSOutput vertexMain(uint vertexID : SV_VertexID) { ... }
+
+[shader("fragment")]
+float4 fragmentMain(VSOutput input) : SV_Target { ... }
+```
+
+No C++ or CMake edits are required.
+
 ## Controls
 
 - `F` / `F11` — fullscreen

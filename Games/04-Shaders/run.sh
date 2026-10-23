@@ -12,11 +12,12 @@ BUILD_ONLY=0
 
 usage() {
     cat <<'USAGE'
-Usage: ./run.sh [1|2] [--build-only]
+Usage: ./run.sh [example] [--build-only]
 
 Examples:
   1  Rectangle outline
   2  Filled rectangle
+  N  Any Shaders/N.slang discovered at configure time.
 
 Environment:
   CPP_GAMES_DEPS_DIR  Dependency cache (default: ~/Library/Caches/cpp-games/deps)
@@ -26,7 +27,7 @@ USAGE
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        1|2)
+        [1-9]|[1-9][0-9]*)
             EXAMPLE="$1"
             ;;
         --build-only)
@@ -44,6 +45,11 @@ while [[ $# -gt 0 ]]; do
     esac
     shift
 done
+
+if [[ ! -f "${SCRIPT_DIR}/Shaders/${EXAMPLE}.slang" ]]; then
+    echo "No shader at ${SCRIPT_DIR}/Shaders/${EXAMPLE}.slang" >&2
+    exit 1
+fi
 
 "${REPO_ROOT}/Tools/install-hooks.sh"
 "${SCRIPT_DIR}/ThirdParty/fetch-dependencies.sh" "${DEPS_DIR}"

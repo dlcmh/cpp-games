@@ -115,16 +115,22 @@ MTL::RenderPipelineState* buildPipeline(MTL::Device* device, const std::string& 
 }
 
 void setTitle(SDL_Window* window, int example) {
-    const char* name = example == 1 ? "1 - Rectangle outline" : "2 - Filled rectangle";
     char title[128];
-    SDL_snprintf(title, sizeof(title), "Shaders - %s", name);
+    SDL_snprintf(title, sizeof(title), "Shaders - Example %d", example);
     SDL_SetWindowTitle(window, title);
 }
 
 }  // namespace
 
 int main(int argc, char* argv[]) {
-    const int example = argc > 1 && std::string(argv[1]) == "2" ? 2 : 1;
+    int example = 1;
+    if (argc > 1) {
+        char* end = nullptr;
+        const long parsed = std::strtol(argv[1], &end, 10);
+        if (end != argv[1] && *end == '\0' && parsed > 0 && parsed < 1000) {
+            example = static_cast<int>(parsed);
+        }
+    }
 
     SDL_SetAppMetadata("Shaders", "0.1.0", "com.dlcmh.cppgames.shaders");
     SDL_SetHint(SDL_HINT_RENDER_DRIVER, "metal");
