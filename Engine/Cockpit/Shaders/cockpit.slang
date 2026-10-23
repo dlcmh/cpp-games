@@ -194,10 +194,6 @@ float4 fragmentMain(VSOutput input) : SV_Target
     layer(rgb, alpha, accent * fireGlow, hud * 0.72);
     layer(rgb, alpha, float3(1.0), smoothstep(0.008, 0.0, reticleRadius) * 0.9);
 
-    // Out-of-phase target brackets drift with steering.
-    const float bracket = sdRoundBox(hudP - float2(-0.34 - cockpit.steer * 0.06, 0.32),
-                                     float2(0.075, 0.050), 0.012);
-    layer(rgb, alpha, accent * 0.55, lineMask(bracket, 0.004));
     }
 
     // Hyperspace: radial star streaks and a blue tunnel glow.
