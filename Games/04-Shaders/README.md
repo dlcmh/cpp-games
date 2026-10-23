@@ -3,6 +3,9 @@
 A small Slang learning project. Each example is one `.slang` file and one
 command.
 
+Start with [Lesson 01](LESSON_01.md) for a beginner-friendly explanation of why
+the rectangle and circle examples are so similar.
+
 ## Run
 
 ```sh
