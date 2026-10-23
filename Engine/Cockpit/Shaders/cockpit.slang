@@ -107,6 +107,11 @@ float dashboardTop(float x)
     return -0.33 + 0.115 * smoothstep(0.42, 1.32, abs(x));
 }
 
+float sideShellTop(float x)
+{
+    return -0.285 + 0.590 * smoothstep(1.00, 1.76, abs(x));
+}
+
 float3 metalColor(float2 p)
 {
     const float grain = hash21(floor(p * 220.0)) * 0.10;
@@ -254,40 +259,69 @@ float4 fragmentMain(VSOutput input) : SV_Target
                   fillMask(sdRoundBox(p - bay - float2(0.0, -0.135), float2(0.19, 0.006), 0.003)));
         }
 
-        // Wraparound side consoles. They sit outboard of the A-pillars so the
-        // canopy stays in front, and rise with the dash edge.
+        // The dash continues into raised side shells. Their top edges climb
+        // toward the canopy so the panel reads as a curved shell, not a strip.
         for (int side = -1; side <= 1; side += 2) {
-            const float sideX = abs(p.x);
-            const float2 consoleCentre = float2(float(side) * 1.43, -0.55);
-            const float wrapPanel = sdRoundBox(p - consoleCentre, float2(0.19, 0.36), 0.035);
-            drawPanel(rgb, alpha, wrapPanel,
-                      float3(0.105, 0.100, 0.090) * (0.86 + 0.14 * hash21(floor(p * 70.0))));
-            layer(rgb, alpha, trim, lineMask(wrapPanel, 0.003));
+            const float sx = abs(p.x);
+            const float shellTop = sideShellTop(p.x);
+            const float shellMask = smoothstep(1.00, 1.03, sx) *
+                                    (1.0 - smoothstep(shellTop - 0.004, shellTop + 0.004, p.y));
+            const float depth = smoothstep(1.00, 1.78, sx);
+            float3 shellColor = lerp(float3(0.135, 0.125, 0.108), float3(0.035, 0.038, 0.040),
+                                     depth);
+            shellColor *= 0.88 + 0.12 * hash21(floor(p * 130.0));
+            layer(rgb, alpha, shellColor, shellMask);
+            layer(rgb, alpha, trim,
+                  lineMask(p.y - shellTop, 0.0035) * smoothstep(1.00, 1.03, sx));
             layer(rgb, alpha, shadow,
-                  lineMask(wrapPanel - 0.012, 0.003) * 0.35);
+                  lineMask(p.y - shellTop + 0.012, 0.004) * smoothstep(1.00, 1.03, sx) * 0.50);
 
-            // Recessed side status screen.
-            const float2 sideScreen = consoleCentre + float2(0.0, 0.19);
-            const float sideScreenD = sdRoundBox(p - sideScreen, float2(0.105, 0.042), 0.010);
-            layer(rgb, alpha, float3(0.006, 0.045, 0.040), fillMask(sideScreenD));
+            // Ribs follow the shell contour and bend upward at the edges.
+            for (int rib = 0; rib < 4; ++rib) {
+                const float ribY = -0.92 + float(rib) * 0.17;
+                const float2 ribA = float2(float(side) * 1.03, ribY);
+                const float2 ribB = float2(float(side) * 1.78, ribY + 0.25);
+                layer(rgb, alpha, float3(0.28, 0.255, 0.215),
+                      lineMask(sdSegment(p, ribA, ribB), 0.0022) * shellMask);
+            }
+
+            // Perspective seams converge toward the lower centre.
+            for (int seam = 0; seam < 4; ++seam) {
+                const float topX = 1.07 + float(seam) * 0.17;
+                const float bottomX = 1.00 + float(seam) * 0.10;
+                const float2 seamA = float2(float(side) * topX, sideShellTop(topX) - 0.02);
+                const float2 seamB = float2(float(side) * bottomX, -1.02);
+                layer(rgb, alpha, float3(0.24, 0.22, 0.19),
+                      lineMask(sdSegment(p, seamA, seamB), 0.0018) * shellMask);
+            }
+
+            // Inset console panel, sheared so it sits on the angled shell.
+            float2 q = float2(sx - 1.39, p.y + 0.55);
+            q.x += q.y * 0.20;
+            const float console = sdRoundBox(q, float2(0.165, 0.315), 0.025);
+            layer(rgb, alpha, float3(0.07, 0.070, 0.065), fillMask(console));
+            layer(rgb, alpha, float3(0.43, 0.39, 0.33), lineMask(console, 0.003));
+            layer(rgb, alpha, shadow, lineMask(console - 0.012, 0.003) * 0.45);
+
+            // Console status screen, switches, and lamp row.
+            const float2 screenP = q - float2(0.0, 0.17);
+            const float sideScreen = sdRoundBox(screenP, float2(0.105, 0.040), 0.010);
+            layer(rgb, alpha, float3(0.006, 0.045, 0.040), fillMask(sideScreen));
             layer(rgb, alpha, accent * 0.35,
-                  fillMask(sideScreenD) * (0.20 + 0.16 * sin(p.y * 80.0 + cockpit.time * 3.0)));
-            layer(rgb, alpha, accent * 0.55, lineMask(sideScreenD, 0.002));
+                  fillMask(sideScreen) * (0.20 + 0.16 * sin(q.y * 90.0 + cockpit.time * 3.0)));
+            layer(rgb, alpha, accent * 0.55, lineMask(sideScreen, 0.002));
 
-            // Guarded switches and a row of lamps.
-            drawButton(rgb, alpha, p, consoleCentre + float2(0.0, 0.08), 0.022,
-                       float3(0.95, 0.16, 0.10));
-            drawButton(rgb, alpha, p, consoleCentre + float2(0.0, 0.00), 0.016,
-                       float3(1.0, 0.60, 0.16));
+            drawButton(rgb, alpha, p, float2(float(side) * 1.39 - float(side) * 0.07,
+                                             -0.47), 0.018, float3(0.95, 0.16, 0.10));
+            drawButton(rgb, alpha, p, float2(float(side) * 1.40 - float(side) * 0.04,
+                                             -0.54), 0.013, float3(1.0, 0.60, 0.16));
             for (int lamp = 0; lamp < 3; ++lamp) {
                 drawButton(rgb, alpha, p,
-                           consoleCentre + float2(-0.10 + float(lamp) * 0.10, -0.13), 0.011,
-                           accent * (0.55 + 0.25 * sin(cockpit.time * 2.0 + float(lamp))));
+                           float2(float(side) * (1.31 + float(lamp) * 0.075), -0.65),
+                           0.010, accent * (0.55 + 0.25 * sin(cockpit.time * 2.0 + float(lamp))));
             }
-            layer(rgb, alpha, float3(0.38, 0.34, 0.28),
-                  fillMask(sdRoundBox(p - consoleCentre - float2(0.0, -0.245),
-                                      float2(0.14, 0.006), 0.003)));
-
+            layer(rgb, alpha, float3(0.36, 0.32, 0.27),
+                  fillMask(sdRoundBox(q - float2(0.0, -0.27), float2(0.13, 0.006), 0.003)));
         }
 
         // Raised centre binnacle.
