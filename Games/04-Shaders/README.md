@@ -61,6 +61,21 @@ float4 fragmentMain(VSOutput input) : SV_Target { ... }
 
 No C++ or CMake edits are required.
 
+## Roller coaster
+
+A barebones first-person ride that focuses on path generation:
+
+```sh
+./run.sh roller-coaster
+```
+
+It uses a closed Catmull-Rom spline, resamples it at equal distances, builds a
+tangent/right/up frame at each sample, and moves the camera along that path with
+a simple height-based speed model. The track mesh is built from the same
+samples, so the camera and rails always agree.
+
+See [ROLLER_COASTER.md](ROLLER_COASTER.md) for the path-generation walkthrough.
+
 ## Controls
 
 - `F` / `F11` — fullscreen
