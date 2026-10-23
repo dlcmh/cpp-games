@@ -1,4 +1,4 @@
-// Example 1: an unfilled rectangle in the centre of the screen.
+// Example 2: the same rectangle, now filled with a flat colour.
 
 struct Uniforms {
     float2 resolution;
@@ -33,6 +33,8 @@ float4 fragmentMain(VSOutput input) : SV_Target
 
     const float2 halfSize = float2(0.34, 0.20);
     const float2 d = abs(p) - halfSize;
+    const float inside = 1.0 - smoothstep(-0.002, 0.0, max(d.x, d.y));
     const float edge = 1.0 - smoothstep(0.0, 0.004, abs(max(d.x, d.y)));
-    return float4(0.90, 0.92, 0.96, edge);
+    const float3 fill = float3(1.00, 0.00, 0.00);
+    return float4(lerp(fill, float3(1.0), edge), inside);
 }
