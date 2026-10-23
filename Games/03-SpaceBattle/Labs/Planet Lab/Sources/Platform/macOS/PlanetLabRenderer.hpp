@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 
-#include "Demo/PlanetGenerator.hpp"
+#include "Planets/PlanetSpec.hpp"
 
 namespace planetlab {
 
@@ -23,7 +23,7 @@ public:
     bool initialize(const NativeSurface& surface, const std::string& shaderDirectory,
                     std::string& error);
     void resize(int pixelWidth, int pixelHeight);
-    bool draw(const PlanetSpec& spec, float time, std::string& error);
+    bool draw(const cppgames::planets::PlanetSpec& spec, float time, std::string& error);
 
 private:
     struct Impl;

@@ -44,22 +44,27 @@ find_library(METAL_FRAMEWORK Metal REQUIRED)
 find_library(QUARTZCORE_FRAMEWORK QuartzCore REQUIRED)
 find_library(FOUNDATION_FRAMEWORK Foundation REQUIRED)
 
+add_subdirectory(
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../../../Engine/Planets"
+    "${CMAKE_BINARY_DIR}/engine-planets"
+)
+
 set(PLANET_METAL "${CMAKE_BINARY_DIR}/generated/planet.metal")
 set(RINGS_METAL "${CMAKE_BINARY_DIR}/generated/rings.metal")
 set(STARFIELD_METAL "${CMAKE_BINARY_DIR}/generated/starfield.metal")
 add_custom_command(
     OUTPUT "${PLANET_METAL}" "${RINGS_METAL}" "${STARFIELD_METAL}"
     COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/generated"
-    COMMAND "${SLANGC}" "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/planet.slang"
+    COMMAND "${SLANGC}" "${CPPGAMES_PLANET_SHADER_DIR}/planet.slang"
             -target metal -entry planetVertex -entry planetFragment -entry atmosphereFragment
             -o "${PLANET_METAL}"
-    COMMAND "${SLANGC}" "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/rings.slang"
+    COMMAND "${SLANGC}" "${CPPGAMES_PLANET_SHADER_DIR}/rings.slang"
             -target metal -entry vertexMain -entry fragmentMain -o "${RINGS_METAL}"
     COMMAND "${SLANGC}" "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/starfield.slang"
             -target metal -entry vertexMain -entry fragmentMain -o "${STARFIELD_METAL}"
     DEPENDS
-        "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/planet.slang"
-        "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/rings.slang"
+        "${CPPGAMES_PLANET_SHADER_DIR}/planet.slang"
+        "${CPPGAMES_PLANET_SHADER_DIR}/rings.slang"
         "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/starfield.slang"
     COMMENT "Compiling Planet Lab shaders to Metal"
     VERBATIM
@@ -69,7 +74,6 @@ add_custom_target(PlanetLabShaders DEPENDS
 
 add_executable(PlanetLab
     Sources/App/Main.cpp
-    Sources/Demo/PlanetGenerator.cpp
     Sources/Platform/macOS/MetalImpl.mm
     Sources/Platform/macOS/PlanetLabRenderer.cpp
 )
@@ -82,6 +86,7 @@ endif()
 target_link_libraries(PlanetLab PRIVATE
     SDL3
     metal-cpp
+    cppgames_planets
     "${METAL_FRAMEWORK}"
     "${QUARTZCORE_FRAMEWORK}"
     "${FOUNDATION_FRAMEWORK}"

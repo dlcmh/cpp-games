@@ -203,6 +203,7 @@ int main(int argc, char* argv[]) {
         renderState.phaseTime += remainder;
         renderState.elapsedSeconds += remainder;
 
+        frame.planetSpec = game.planet();
         sceneBuilder.build(renderState, frame);
         frame.pixelWidth = pixelWidth;
         frame.pixelHeight = pixelHeight;

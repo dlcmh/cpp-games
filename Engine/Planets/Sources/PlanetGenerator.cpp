@@ -1,10 +1,10 @@
-#include "Demo/PlanetGenerator.hpp"
+#include "Planets/PlanetSpec.hpp"
 
 #include <cmath>
 #include <cstdint>
 #include <random>
 
-namespace planetlab {
+namespace cppgames::planets {
 namespace {
 
 struct Rng {
@@ -269,4 +269,4 @@ std::uint64_t nextSeed(std::uint64_t current) {
     return z ^ (z >> 31);
 }
 
-}  // namespace planetlab
+}  // namespace cppgames::planets

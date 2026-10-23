@@ -57,6 +57,13 @@ void addSky(RenderFrame& frame) {
     addOpaque(frame, sky);
 }
 
+void addPlanet(RenderFrame& frame, Vec3 position, float radius, float spin) {
+    const auto& spec = frame.planetSpec;
+    const Mat4 model = translation(position) * rotationZ(spec.tiltZ) * rotationX(spec.tiltX) *
+                       rotationY(spin) * scaling(radius);
+    frame.planetModels.push_back(model);
+}
+
 void addSphere(RenderFrame& frame, Vec3 position, float radius, Material material, Vec3 color,
                float spin = 0.0f) {
     DrawItem item{};
@@ -156,8 +163,8 @@ void buildApproach(const BattleState& state, RenderFrame& frame) {
 
     setCamera(frame, eye, target, {0.0f, 1.0f, 0.0f});
     addSky(frame);
-    addSphere(frame, {-95.0f, -70.0f, -330.0f}, 112.0f, Material::Planet, {0.18f, 0.38f, 0.72f},
-              state.elapsedSeconds * 0.01f);
+    addPlanet(frame, {-95.0f, -70.0f, -330.0f}, 112.0f,
+              state.elapsedSeconds * frame.planetSpec.spinSpeed);
     addSphere(frame, deathStar, 27.0f, Material::DeathStar, {0.55f, 0.57f, 0.60f},
               state.elapsedSeconds * 0.03f);
     addTieFighters(frame, t, {-12.0f, 6.0f, -58.0f});
@@ -185,8 +192,7 @@ void buildTrench(const BattleState& state, RenderFrame& frame) {
 
     setCamera(frame, eye, target, {0.0f, 1.0f, 0.0f}, 1.08f);
     addSky(frame);
-    addSphere(frame, {-100.0f, -55.0f, cameraZ - 360.0f}, 90.0f, Material::Planet,
-              {0.18f, 0.40f, 0.74f}, state.elapsedSeconds * 0.01f);
+    addPlanet(frame, {-100.0f, -55.0f, cameraZ - 360.0f}, 90.0f, state.elapsedSeconds * 0.02f);
 
     DrawItem trench{};
     trench.mesh = MeshId::Trench;
@@ -252,8 +258,8 @@ void buildExplosion(const BattleState& state, RenderFrame& frame) {
     const Vec3 eye{0.0f, 10.0f - t * 0.25f, 15.0f - t * 0.8f};
     setCamera(frame, eye, deathStar, {0.0f, 1.0f, 0.0f}, 1.05f);
     addSky(frame);
-    addSphere(frame, {-100.0f, -68.0f, -380.0f}, 125.0f, Material::Planet, {0.18f, 0.40f, 0.74f},
-              state.elapsedSeconds * 0.01f);
+    addPlanet(frame, {-100.0f, -68.0f, -380.0f}, 125.0f,
+              state.elapsedSeconds * frame.planetSpec.spinSpeed);
 
     if (t < 0.45f) {
         addSphere(frame, deathStar, 40.0f, Material::DeathStar, {0.35f, 0.36f, 0.39f},
@@ -323,8 +329,7 @@ void buildGauntlet(const BattleState& state, RenderFrame& frame) {
 
     setCamera(frame, eye, target, up, 1.04f);
     addSky(frame);
-    addSphere(frame, {-140.0f, -80.0f, cameraZ - 380.0f}, 110.0f, Material::Planet,
-              {0.16f, 0.34f, 0.66f}, state.elapsedSeconds * 0.01f);
+    addPlanet(frame, {-140.0f, -80.0f, cameraZ - 380.0f}, 110.0f, state.elapsedSeconds * 0.02f);
 
     // Star Destroyer hanging above the escape corridor.
     DrawItem starDestroyer{};
@@ -378,6 +383,7 @@ void SceneBuilder::build(const BattleState& state, RenderFrame& frame) {
     frame.opaque.clear();
     frame.additive.clear();
     frame.lasers.clear();
+    frame.planetModels.clear();
     frame.time = state.elapsedSeconds;
     frame.phaseTime = state.phaseTime;
     frame.phase = static_cast<int>(state.phase);

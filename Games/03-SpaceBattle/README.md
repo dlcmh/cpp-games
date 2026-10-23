@@ -98,7 +98,7 @@ All models live in one static `MeshBatch` and are drawn with the same pipeline.
 
 | Mesh | Used for | Notes |
 | --- | --- | --- |
-| Sphere | Planet, Death Star, sky dome, explosion shells | High-tessellation UV sphere; material shader supplies the surface. |
+| Sphere | Death Star, sky dome, explosion shells | High-tessellation UV sphere; material shader supplies the surface. |
 | Asteroid | Gauntlet obstacles | Low-poly sphere with deterministic radial noise and flat-shaded-looking rock color. |
 | TIE fighter | Enemy fighters | Sphere cockpit, hex wings, and twin struts generated from primitives. |
 | Star Destroyer | Gauntlet backdrop | Triangular wedge hull plus bridge tower, shield domes, and engine banks. |
@@ -110,7 +110,7 @@ That is a deliberate tradeoff: it gives a convincing first-person frame and HUD
 without a cockpit model, while the expensive 3D work stays in the world behind
 the glass.
 
-The planet and Death Star reuse the sphere mesh with different material
+The Death Star and sky reuse the sphere mesh with different material
 programs. The Death Star's dish, equatorial trench, panel grid, and green
 lights are procedural surface detail, not a texture.
 
@@ -123,9 +123,8 @@ fragment shaders:
 - Passes world position, normal, local position, and vertex color to the
   fragment shader.
 - Selects a material from a per-object uniform and procedurally shades it.
-- Generates the star field, nebula, planet clouds/atmosphere, Death Star
-  panels/dish/trench, asteroid grain, TIE glows, Star Destroyer windows, laser
-  cores, and noisy explosion fire.
+- Generates the star field, nebula, Death Star panels/dish/trench, asteroid
+  grain, TIE glows, Star Destroyer windows, and noisy explosion fire.
 
 The cockpit is a shared engine module, not a game-local shader. Its source is
 [`Engine/Cockpit/Shaders/cockpit.slang`](../../Engine/Cockpit/Shaders/cockpit.slang),
@@ -140,6 +139,12 @@ iterated in the [laser lab](<Labs/X-Wing Lasers/README.md>). The lab and game
 share the `XWingCannon` muzzle offsets, cadence, bolt motion, reticle
 convergence, and visual preset.
 
+The planets come from the shared
+[Engine/Planets](../../Engine/Planets/README.md) module and are iterated in the
+[Planet Lab](<Labs/Planet Lab/README.md>). Both open on
+`kShowcasePlanetSeed`, and both draw `PlanetSpec` through `PlanetRenderer`; the
+lab presses `Space` to explore beyond the showcase planet.
+
 The Slang compiler emits Metal Shading Language at build time. The app compiles
 the generated `.metal` source at runtime, so development works with only the
 Command Line Tools. CMake copies shader resources into the app bundle on every
@@ -151,7 +156,6 @@ build; shader-only edits do not require a relink.
 | --- | --- |
 | `Lit` | Gray-blue panel shading and a faint cyan glow in the trench fog. |
 | `Emissive` | Flat emissive color for target ports and engine panels. |
-| `Planet` | FBM continents, clouds, polar color, and a fresnel atmosphere. |
 | `DeathStar` | Spherical panel grid, dish rings, equator trench, window lights. |
 | `Trench` | World-space panel lines, rib highlights, distant fog, sparse lights. |
 | `Asteroid` | Procedural rock grain. |
@@ -166,7 +170,7 @@ build; shader-only edits do not require a relink.
 | --- | --- |
 | Demo phase clock, pausing, preview shortcuts | Vertex transforms and rasterization |
 | Camera paths and lateral steering | Lighting and material branching |
-| Building the draw list and object transforms | Procedural planet/Death Star/trench/sky surfaces |
+| Building the draw list and object transforms | Death Star/trench/sky surfaces, shared planet models |
 | Allocating and uploading mesh/uniform buffers | Antialiased cockpit SDFs and HUD composition |
 | Metal draw submission and depth/pipeline state | Laser glow, additive blending for explosions |
 | SDL windowing, input, and fixed timestep | No mesh animation or skinning; every model is rigid |

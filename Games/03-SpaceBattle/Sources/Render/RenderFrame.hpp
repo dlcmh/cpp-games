@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "Lasers/LaserTypes.hpp"
+#include "Planets/PlanetSpec.hpp"
 #include "Render/Math.hpp"
 #include "Render/MeshId.hpp"
 
@@ -38,6 +39,8 @@ struct RenderFrame {
     std::vector<DrawItem> opaque;
     std::vector<DrawItem> additive;
     std::vector<cppgames::lasers::LaserBeam> lasers;
+    std::vector<Mat4> planetModels;
+    cppgames::planets::PlanetSpec planetSpec{};
 };
 
 }  // namespace spacebattle

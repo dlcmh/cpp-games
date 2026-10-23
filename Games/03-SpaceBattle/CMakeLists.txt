@@ -54,12 +54,18 @@ add_subdirectory(
     "${CMAKE_CURRENT_SOURCE_DIR}/../../Engine/Lasers"
     "${CMAKE_BINARY_DIR}/engine-lasers"
 )
+add_subdirectory(
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../Engine/Planets"
+    "${CMAKE_BINARY_DIR}/engine-planets"
+)
 
 set(SCENE_METAL "${CMAKE_BINARY_DIR}/generated/scene.metal")
 set(COCKPIT_METAL "${CMAKE_BINARY_DIR}/generated/cockpit.metal")
 set(LASER_METAL "${CMAKE_BINARY_DIR}/generated/laser.metal")
+set(PLANET_METAL "${CMAKE_BINARY_DIR}/generated/planet.metal")
+set(RINGS_METAL "${CMAKE_BINARY_DIR}/generated/rings.metal")
 add_custom_command(
-    OUTPUT "${SCENE_METAL}" "${COCKPIT_METAL}" "${LASER_METAL}"
+    OUTPUT "${SCENE_METAL}" "${COCKPIT_METAL}" "${LASER_METAL}" "${PLANET_METAL}" "${RINGS_METAL}"
     COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/generated"
     COMMAND "${SLANGC}" "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/scene.slang"
             -target metal -entry vertexMain -entry fragmentMain -o "${SCENE_METAL}"
@@ -67,14 +73,23 @@ add_custom_command(
             -target metal -entry vertexMain -entry fragmentMain -o "${COCKPIT_METAL}"
     COMMAND "${SLANGC}" "${CPPGAMES_LASER_SHADER}"
             -target metal -entry vertexMain -entry fragmentMain -o "${LASER_METAL}"
+    COMMAND "${SLANGC}" "${CPPGAMES_PLANET_SHADER_DIR}/planet.slang"
+            -target metal -entry planetVertex -entry planetFragment -entry atmosphereFragment
+            -o "${PLANET_METAL}"
+    COMMAND "${SLANGC}" "${CPPGAMES_PLANET_SHADER_DIR}/rings.slang"
+            -target metal -entry vertexMain -entry fragmentMain -o "${RINGS_METAL}"
     DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/scene.slang"
         "${CPPGAMES_COCKPIT_SHADER}"
         "${CPPGAMES_LASER_SHADER}"
+        "${CPPGAMES_PLANET_SHADER_DIR}/planet.slang"
+        "${CPPGAMES_PLANET_SHADER_DIR}/rings.slang"
     COMMENT "Compiling Space Battle shaders to Metal"
     VERBATIM
 )
-add_custom_target(SpaceBattleShaders DEPENDS "${SCENE_METAL}" "${COCKPIT_METAL}" "${LASER_METAL}")
+add_custom_target(SpaceBattleShaders DEPENDS
+    "${SCENE_METAL}" "${COCKPIT_METAL}" "${LASER_METAL}"
+    "${PLANET_METAL}" "${RINGS_METAL}")
 
 add_executable(SpaceBattle
     Sources/App/Main.cpp
@@ -97,6 +112,7 @@ target_link_libraries(SpaceBattle PRIVATE
     metal-cpp
     cppgames_cockpit
     cppgames_lasers
+    cppgames_planets
     "${METAL_FRAMEWORK}"
     "${QUARTZCORE_FRAMEWORK}"
     "${FOUNDATION_FRAMEWORK}"
@@ -116,7 +132,14 @@ add_custom_target(SpaceBattleResources ALL
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${LASER_METAL}"
             "$<TARGET_BUNDLE_DIR:SpaceBattle>/Contents/Resources/shaders/laser.metal"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${PLANET_METAL}"
+            "$<TARGET_BUNDLE_DIR:SpaceBattle>/Contents/Resources/shaders/planet.metal"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${RINGS_METAL}"
+            "$<TARGET_BUNDLE_DIR:SpaceBattle>/Contents/Resources/shaders/rings.metal"
     DEPENDS "${SCENE_METAL}" "${COCKPIT_METAL}" "${LASER_METAL}"
+            "${PLANET_METAL}" "${RINGS_METAL}"
     COMMENT "Bundling Space Battle shaders"
     VERBATIM
 )

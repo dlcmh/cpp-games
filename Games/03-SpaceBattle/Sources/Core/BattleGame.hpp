@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/BattleState.hpp"
+#include "Planets/PlanetSpec.hpp"
 
 namespace spacebattle {
 
@@ -16,11 +17,13 @@ public:
     void previewPhase(int oneBasedPhase);
 
     [[nodiscard]] const BattleState& state() const noexcept;
+    [[nodiscard]] const cppgames::planets::PlanetSpec& planet() const noexcept;
 
 private:
     void advancePhase();
 
     BattleState state_{};
+    cppgames::planets::PlanetSpec planet_{};
 };
 
 }  // namespace spacebattle

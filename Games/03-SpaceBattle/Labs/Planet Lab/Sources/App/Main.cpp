@@ -1,7 +1,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_metal.h>
 
-#include "Demo/PlanetGenerator.hpp"
+#include "Planets/PlanetSpec.hpp"
 #include "Platform/macOS/PlanetLabRenderer.hpp"
 
 #include <algorithm>
@@ -10,7 +10,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
-#include <random>
 #include <string>
 #include <system_error>
 
@@ -38,12 +37,12 @@ std::filesystem::path resolveShaderDirectory() {
     return "Shaders";
 }
 
-void updateWindowTitle(SDL_Window* window, const planetlab::PlanetSpec& spec, bool paused) {
+void updateWindowTitle(SDL_Window* window, const cppgames::planets::PlanetSpec& spec, bool paused) {
     char title[320];
     std::snprintf(title, sizeof(title),
                   "Planet Lab | #%016" PRIx64 " | %s | Rings: %s | %s | [Space] new planet",
-                  spec.seed, planetlab::planetTypeName(spec.type), spec.hasRings ? "yes" : "no",
-                  paused ? "PAUSED" : "SPINNING");
+                  spec.seed, cppgames::planets::planetTypeName(spec.type),
+                  spec.hasRings ? "yes" : "no", paused ? "PAUSED" : "SPINNING");
     static std::string previousTitle;
     if (title != previousTitle) {
         SDL_SetWindowTitle(window, title);
@@ -104,10 +103,8 @@ int main(int argc, char* argv[]) {
     SDL_ShowWindow(window);
     SDL_RaiseWindow(window);
 
-    std::random_device randomDevice;
-    std::uint64_t seed = (static_cast<std::uint64_t>(randomDevice()) << 32) ^
-                         static_cast<std::uint64_t>(randomDevice());
-    planetlab::PlanetSpec spec = planetlab::generatePlanet(seed);
+    std::uint64_t seed = cppgames::planets::kShowcasePlanetSeed;
+    cppgames::planets::PlanetSpec spec = cppgames::planets::generatePlanet(seed);
     float time = 0.0f;
     bool paused = false;
     bool running = true;
@@ -133,8 +130,8 @@ int main(int argc, char* argv[]) {
                     running = false;
                     break;
                 case SDLK_SPACE:
-                    seed = planetlab::nextSeed(seed);
-                    spec = planetlab::generatePlanet(seed);
+                    seed = cppgames::planets::nextSeed(seed);
+                    spec = cppgames::planets::generatePlanet(seed);
                     time = 0.0f;
                     paused = false;
                     updateWindowTitle(window, spec, paused);

@@ -4,6 +4,7 @@
 #include "Cockpit/CockpitState.hpp"
 #include "Lasers/LaserRenderer.hpp"
 #include "Lasers/LaserTypes.hpp"
+#include "Planets/PlanetRenderer.hpp"
 #include "Platform/macOS/MeshLibrary.hpp"
 #include "Platform/macOS/Pipelines.hpp"
 #include "Platform/macOS/SceneUniforms.hpp"
@@ -50,6 +51,7 @@ private:
     Pipelines pipelines_;
     cppgames::cockpit::CockpitOverlay cockpit_;
     cppgames::lasers::LaserRenderer lasers_;
+    cppgames::planets::PlanetRenderer planetRenderer_;
     CA::MetalLayer* layer_{nullptr};
     int pixelWidth_{0};
     int pixelHeight_{0};
@@ -98,6 +100,10 @@ bool MetalRenderer::initialize(const NativeSurface& surface, const std::string& 
         return false;
     }
     if (!lasers_.build(device_.get(), shaderDirectory + "/laser.metal", true, error)) {
+        pool->release();
+        return false;
+    }
+    if (!planetRenderer_.build(device_.get(), shaderDirectory, true, error)) {
         pool->release();
         return false;
     }
@@ -251,6 +257,33 @@ bool MetalRenderer::draw(const RenderFrame& frame, std::string& error) {
     };
 
     encodeItems(frame.opaque);
+
+    // Generated planets use the same module as the Planet Lab. They are drawn
+    // after the opaque pass so scene geometry still occludes them correctly.
+    if (!frame.planetModels.empty()) {
+        cppgames::planets::PlanetDraw planetDraw{};
+        for (int index = 0; index < 16; ++index) {
+            planetDraw.viewProjection[index] = frameUniforms.viewProjection.m[index];
+        }
+        planetDraw.cameraPosition[0] = frame.camera.position.x;
+        planetDraw.cameraPosition[1] = frame.camera.position.y;
+        planetDraw.cameraPosition[2] = frame.camera.position.z;
+        planetDraw.sunDirection[0] = frame.planetSpec.sunDirection[0];
+        planetDraw.sunDirection[1] = frame.planetSpec.sunDirection[1];
+        planetDraw.sunDirection[2] = frame.planetSpec.sunDirection[2];
+        planetDraw.time = frame.time;
+        planetDraw.drawRings = false;
+        planetDraw.drawAtmosphere = frame.planetSpec.atmosphereDensity > 0.001f;
+
+        for (const Mat4& model : frame.planetModels) {
+            for (int index = 0; index < 16; ++index) {
+                planetDraw.model[index] = model.m[index];
+                planetDraw.ringModel[index] = model.m[index];
+            }
+            planetRenderer_.encode(encoder, frame.planetSpec, planetDraw);
+        }
+        encoder->setCullMode(MTL::CullModeNone);
+    }
 
     // Lasers and explosions use additive blending and do not write depth.
     encoder->setRenderPipelineState(pipelines_.additive());

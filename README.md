@@ -22,10 +22,11 @@ Specifications:
   — the interactive cockpit lab for SpaceBattle.
 - [X-Wing Laser Lab](Games/03-SpaceBattle/Labs/X-Wing%20Lasers/README.md)
   — the interactive laser lab for SpaceBattle.
-- [Planet Lab](Games/03-SpaceBattle/Labs/Planet%20Lab/README.md) — an infinite
-  seeded procedural planet generator.
+- [Planet Lab](Games/03-SpaceBattle/Labs/Planet%20Lab/README.md) — a seeded
+  procedural planet generator sharing its planet with SpaceBattle.
 - Shared cockpit module: [Engine/Cockpit](Engine/Cockpit/README.md).
 - Shared laser module: [Engine/Lasers](Engine/Lasers/README.md).
+- Shared planet module: [Engine/Planets](Engine/Planets/README.md).
 
 ## Development
 

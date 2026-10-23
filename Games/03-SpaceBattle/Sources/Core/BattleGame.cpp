@@ -1,5 +1,6 @@
 #include "Core/BattleGame.hpp"
 #include "Core/BattleState.hpp"
+#include "Planets/PlanetSpec.hpp"
 
 #include <algorithm>
 #include <string_view>
@@ -53,6 +54,9 @@ std::string_view phaseName(BattlePhase phase) {
 
 BattleGame::BattleGame() {
     state_.steer = 0.0f;
+
+    // Same showcase planet the Planet Lab opens with.
+    planet_ = cppgames::planets::generatePlanet(cppgames::planets::kShowcasePlanetSeed);
 }
 
 void BattleGame::update(float deltaSeconds) {
@@ -113,6 +117,10 @@ void BattleGame::previewPhase(int oneBasedPhase) {
 
 const BattleState& BattleGame::state() const noexcept {
     return state_;
+}
+
+const cppgames::planets::PlanetSpec& BattleGame::planet() const noexcept {
+    return planet_;
 }
 
 void BattleGame::advancePhase() {
