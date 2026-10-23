@@ -181,7 +181,8 @@ build; shader-only edits do not require a relink.
 ├── Docs/screenshot.png
 ├── Labs/
 │   ├── X-Wing Cockpit/      # standalone cockpit lab, same shared module
-│   └── X-Wing Lasers/       # standalone laser lab, same shared module
+│   ├── X-Wing Lasers/       # standalone laser lab, same shared module
+│   └── Planet Lab/          # standalone seeded procedural planet lab
 ├── Shaders/
 │   └── scene.slang          # 3D world, procedural materials, sky
 ├── ThirdParty/
