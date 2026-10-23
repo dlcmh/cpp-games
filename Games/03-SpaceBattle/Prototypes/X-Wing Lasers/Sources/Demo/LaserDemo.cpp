@@ -102,7 +102,7 @@ std::vector<cppgames::lasers::LaserBeam> LaserDemo::beams() const {
         beam.end[0] = x1;
         beam.end[1] = y1;
         beam.end[2] = -4.0f - bolt.travel - bolt.length;
-        beam.width = 0.10f;
+        beam.width = 0.18f;
         beam.color[0] = 1.0f;
         beam.color[1] = 0.13f;
         beam.color[2] = 0.035f;
