@@ -26,7 +26,7 @@ The app bundle is written to
 
 | Input | Action |
 | --- | --- |
-| `Left` / `A`, `Right` / `D` | Steer the cockpit; stars and reticle respond |
+| `Left` / `A`, `Right` / `D` | Steer; the reticle shifts with the cockpit |
 | `Space` | Fire; brightens the reticle |
 | `J` | Trigger hyperspace |
 | `X` | Trigger explosion flash |
@@ -47,13 +47,15 @@ and whether the auto-demo is running.
 
 ## What the lab renders
 
-- [`Shaders/backdrop.slang`](Shaders/backdrop.slang): procedural stars, a
-  planet limb, a distant Death Star target, and hyperspace streaks.
+- **Only the cockpit.** The clear is a neutral dark field; there is no star
+  field, planet, Death Star, or 3D scene behind the overlay.
+- A wraparound metal dash with rising side consoles, a central targeting
+  display, radar, speed gauge, switch banks, canopy frame, and HUD.
 - `Engine/Cockpit`: the real, shared cockpit overlay, compiled from the same
   shader that SpaceBattle uses.
 - [`Sources/Platform/macOS/CockpitLabRenderer.cpp`](Sources/Platform/macOS/CockpitLabRenderer.cpp):
-  owns the SDL Metal layer, the backdrop pipeline, and the overlay encode. It
-  deliberately has no game scene, depth buffer, or 3D renderer.
+  owns the SDL Metal layer and encodes the cockpit overlay directly. It has no
+  backdrop pipeline, game scene, depth buffer, or 3D renderer.
 - [`Sources/Demo/CockpitDemo.cpp`](Sources/Demo/CockpitDemo.cpp): presentation
   state only. Auto-demo, presets, toggles, tint/scale adjustments, and transitions
   are separate from rendering.

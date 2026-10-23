@@ -49,22 +49,17 @@ add_subdirectory(
     "${CMAKE_BINARY_DIR}/engine-cockpit"
 )
 
-set(BACKDROP_METAL "${CMAKE_BINARY_DIR}/generated/backdrop.metal")
 set(COCKPIT_METAL "${CMAKE_BINARY_DIR}/generated/cockpit.metal")
 add_custom_command(
-    OUTPUT "${BACKDROP_METAL}" "${COCKPIT_METAL}"
+    OUTPUT "${COCKPIT_METAL}"
     COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/generated"
-    COMMAND "${SLANGC}" "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/backdrop.slang"
-            -target metal -entry vertexMain -entry fragmentMain -o "${BACKDROP_METAL}"
     COMMAND "${SLANGC}" "${CPPGAMES_COCKPIT_SHADER}"
             -target metal -entry vertexMain -entry fragmentMain -o "${COCKPIT_METAL}"
-    DEPENDS
-        "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/backdrop.slang"
-        "${CPPGAMES_COCKPIT_SHADER}"
+    DEPENDS "${CPPGAMES_COCKPIT_SHADER}"
     COMMENT "Compiling cockpit lab shaders to Metal"
     VERBATIM
 )
-add_custom_target(XWingLabShaders DEPENDS "${BACKDROP_METAL}" "${COCKPIT_METAL}")
+add_custom_target(XWingLabShaders DEPENDS "${COCKPIT_METAL}")
 
 add_executable(XWingCockpitLab
     Sources/App/Main.cpp
@@ -93,12 +88,9 @@ add_custom_target(XWingLabResources ALL
     COMMAND ${CMAKE_COMMAND} -E make_directory
             "$<TARGET_BUNDLE_DIR:XWingCockpitLab>/Contents/Resources/shaders"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${BACKDROP_METAL}"
-            "$<TARGET_BUNDLE_DIR:XWingCockpitLab>/Contents/Resources/shaders/backdrop.metal"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${COCKPIT_METAL}"
             "$<TARGET_BUNDLE_DIR:XWingCockpitLab>/Contents/Resources/shaders/cockpit.metal"
-    DEPENDS "${BACKDROP_METAL}" "${COCKPIT_METAL}"
+    DEPENDS "${COCKPIT_METAL}"
     COMMENT "Bundling cockpit lab shaders"
     VERBATIM
 )

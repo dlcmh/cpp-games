@@ -7,103 +7,14 @@
 #include <Metal/Metal.hpp>
 #include <QuartzCore/QuartzCore.hpp>
 
-#include <cstddef>
-#include <fstream>
-#include <ios>
-#include <iterator>
 #include <memory>
 #include <string>
 
 namespace cockpitlab {
-namespace {
-
-struct alignas(16) BackdropUniforms {
-    float resolution[2];
-    float time;
-    float jump;
-    float steer;
-    float padding[3];
-};
-
-static_assert(sizeof(BackdropUniforms) == 32, "BackdropUniforms must match Slang");
-
-std::string readTextFile(const std::string& path) {
-    std::ifstream input(path, std::ios::binary);
-    if (!input) {
-        return {};
-    }
-    return {std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>()};
-}
-
-NS::String* makeString(const char* text) {
-    return NS::String::string(text, NS::UTF8StringEncoding);
-}
-
-std::string describeError(NS::Error* error) {
-    if (error == nullptr) {
-        return "unknown Metal error";
-    }
-    NS::String* description = error->localizedDescription();
-    if (description == nullptr || description->utf8String() == nullptr) {
-        return "unknown Metal error";
-    }
-    return description->utf8String();
-}
-
-MTL::RenderPipelineState* makeBackdropPipeline(MTL::Device* device, const std::string& shaderPath,
-                                               std::string& error) {
-    const std::string source = readTextFile(shaderPath);
-    if (source.empty()) {
-        error = "Could not read backdrop shader at " + shaderPath;
-        return nullptr;
-    }
-
-    NS::Error* metalError = nullptr;
-    MTL::Library* library = device->newLibrary(makeString(source.c_str()), nullptr, &metalError);
-    if (library == nullptr) {
-        error = "Backdrop shader compilation failed: " + describeError(metalError);
-        return nullptr;
-    }
-
-    MTL::Function* vertex = library->newFunction(makeString("vertexMain"));
-    MTL::Function* fragment = library->newFunction(makeString("fragmentMain"));
-    if (vertex == nullptr || fragment == nullptr) {
-        error = "backdrop.metal is missing vertexMain or fragmentMain";
-        if (vertex != nullptr) {
-            vertex->release();
-        }
-        if (fragment != nullptr) {
-            fragment->release();
-        }
-        library->release();
-        return nullptr;
-    }
-
-    MTL::RenderPipelineDescriptor* descriptor = MTL::RenderPipelineDescriptor::alloc()->init();
-    descriptor->setLabel(makeString("Cockpit Lab Backdrop"));
-    descriptor->setVertexFunction(vertex);
-    descriptor->setFragmentFunction(fragment);
-    descriptor->colorAttachments()->object(0)->setPixelFormat(MTL::PixelFormatBGRA8Unorm);
-
-    metalError = nullptr;
-    MTL::RenderPipelineState* pipeline = device->newRenderPipelineState(descriptor, &metalError);
-    if (pipeline == nullptr) {
-        error = "Could not create backdrop pipeline: " + describeError(metalError);
-    }
-
-    descriptor->release();
-    vertex->release();
-    fragment->release();
-    library->release();
-    return pipeline;
-}
-
-}  // namespace
 
 struct CockpitLabRenderer::Impl {
     NS::SharedPtr<MTL::Device> device;
     NS::SharedPtr<MTL::CommandQueue> commandQueue;
-    NS::SharedPtr<MTL::RenderPipelineState> backdropPipeline;
     cppgames::cockpit::CockpitOverlay cockpit;
     CA::MetalLayer* layer{nullptr};
     int pixelWidth{0};
@@ -145,13 +56,6 @@ bool CockpitLabRenderer::initialize(const NativeSurface& surface,
     impl_->layer->setDisplaySyncEnabled(true);
     impl_->layer->setMaximumDrawableCount(3);
     resize(surface.pixelWidth, surface.pixelHeight);
-
-    impl_->backdropPipeline = NS::TransferPtr(
-        makeBackdropPipeline(impl_->device.get(), shaderDirectory + "/backdrop.metal", error));
-    if (!impl_->backdropPipeline) {
-        pool->release();
-        return false;
-    }
 
     if (!impl_->cockpit.build(impl_->device.get(), shaderDirectory + "/cockpit.metal", false,
                               error)) {
@@ -195,14 +99,7 @@ bool CockpitLabRenderer::draw(const cppgames::cockpit::CockpitState& cockpitStat
     attachment->setTexture(drawable->texture());
     attachment->setLoadAction(MTL::LoadActionClear);
     attachment->setStoreAction(MTL::StoreActionStore);
-    attachment->setClearColor(MTL::ClearColor(0.002, 0.004, 0.012, 1.0));
-
-    BackdropUniforms uniforms{};
-    uniforms.resolution[0] = static_cast<float>(impl_->pixelWidth);
-    uniforms.resolution[1] = static_cast<float>(impl_->pixelHeight);
-    uniforms.time = cockpitState.time;
-    uniforms.jump = cockpitState.jump;
-    uniforms.steer = cockpitState.steer;
+    attachment->setClearColor(MTL::ClearColor(0.008, 0.009, 0.012, 1.0));
 
     MTL::CommandBuffer* commandBuffer = impl_->commandQueue->commandBuffer();
     if (commandBuffer == nullptr) {
@@ -213,11 +110,6 @@ bool CockpitLabRenderer::draw(const cppgames::cockpit::CockpitState& cockpitStat
     }
 
     MTL::RenderCommandEncoder* encoder = commandBuffer->renderCommandEncoder(pass);
-    encoder->setRenderPipelineState(impl_->backdropPipeline.get());
-    encoder->setFragmentBytes(&uniforms, sizeof(uniforms), 0);
-    encoder->drawPrimitives(MTL::PrimitiveTypeTriangle, static_cast<NS::UInteger>(0),
-                            static_cast<NS::UInteger>(3));
-
     impl_->cockpit.encode(encoder, cockpitState, impl_->pixelWidth, impl_->pixelHeight);
 
     encoder->endEncoding();

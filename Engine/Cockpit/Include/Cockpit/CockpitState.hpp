@@ -24,7 +24,7 @@ struct CockpitState {
 
     // 0 = clear glass, 1 = heavily tinted canopy.
     float glassTint{0.10f};
-    // Scales the reticle/target bracket around the screen centre.
+    // Scales the reticle around the screen centre.
     float hudScale{1.0f};
 };
 
