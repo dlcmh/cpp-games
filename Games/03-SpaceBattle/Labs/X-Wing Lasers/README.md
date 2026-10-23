@@ -31,25 +31,26 @@ The app bundle is written to
 | `F` / `F11` | Fullscreen |
 | `Esc` / `Q` | Quit |
 
-The window title reports whether auto-fire is active, the current bolt count, and
-whether the cockpit overlay is visible.
+The window title reports whether auto-fire is active and whether the cockpit
+overlay is visible.
 
 ## Architecture
 
 - [`Engine/Lasers`](../../../../Engine/Lasers/README.md) — shared `LaserBeam`
-  data, `LaserRenderer`, and `laser.slang`.
+  data, `XWingCannon` volley builder, `LaserRenderer`, and `laser.slang`.
 - [`Sources/Demo/LaserDemo.cpp`](Sources/Demo/LaserDemo.cpp) — demo timing,
-  bolt motion, and cockpit state. No Metal.
+  auto/manual control, and cockpit state. No Metal.
 - [`Sources/Platform/macOS/LaserLabRenderer.cpp`](Sources/Platform/macOS/LaserLabRenderer.cpp)
   — owns the SDL Metal layer, the procedural backdrop, the shared laser pass,
   and the shared cockpit overlay.
 - [`Shaders/backdrop.slang`](Shaders/backdrop.slang) — stars, planet, and target
   for context.
 
-`LaserDemo::beams()` produces `cppgames::lasers::LaserBeam` values using the
-shared `kXWingLaserVisual` preset. The renderer projects them to screen space and
-draws additive glowing segments. The lab and SpaceBattle therefore share the
-same laser look, preset, and data contract.
+`LaserDemo::beams()` asks the shared `XWingCannon` builder for the volley
+stream. The lab and SpaceBattle use the same muzzle offsets, bolt speed/length,
+0.62 s fire period, and `kXWingLaserVisual` preset, so the starting point and
+cadence match. The renderer then projects the beams to screen space and draws
+additive glowing segments.
 
 ## Pluggable into SpaceBattle
 

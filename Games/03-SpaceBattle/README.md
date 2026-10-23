@@ -136,7 +136,8 @@ of its render pass. The same module powers the
 [cockpit lab](<Labs/X-Wing Cockpit/README.md>), where the visuals can
 be iterated in isolation and then land in the game without copy/paste.
 Laser visuals live in [Engine/Lasers](../../Engine/Lasers/README.md) and are
-iterated in the [laser lab](<Labs/X-Wing Lasers/README.md>).
+iterated in the [laser lab](<Labs/X-Wing Lasers/README.md>). The lab and game
+share the `XWingCannon` muzzle offsets, cadence, bolt motion, and visual preset.
 
 The Slang compiler emits Metal Shading Language at build time. The app compiles
 the generated `.metal` source at runtime, so development works with only the

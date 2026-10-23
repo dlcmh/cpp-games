@@ -9,6 +9,9 @@ Reusable X-Wing laser rendering shared by SpaceBattle and the
   width, color, intensity, style, and a deterministic seed. No graphics types.
 - `kXWingLaserVisual` — the canonical X-Wing width/color/intensity preset used
   by both the lab and SpaceBattle, so lab tuning lands in the game.
+- [`XWingCannon`](Include/Lasers/XWingCannon.hpp) — the shared continuous volley
+  stream: muzzle offsets, bolt speed/length, travel range, and the 0.62 s fire
+  period. The lab and game call the same builder.
 - [`LaserFrame`](Include/Lasers/LaserTypes.hpp) — view-projection, projection
   scale, aspect ratio, camera position, and time.
 - [`LaserRenderer`](Include/Lasers/LaserRenderer.hpp) — compiles `laser.metal`,

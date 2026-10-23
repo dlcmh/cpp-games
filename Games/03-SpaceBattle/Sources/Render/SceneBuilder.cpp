@@ -1,6 +1,8 @@
 #include "Render/SceneBuilder.hpp"
+
 #include "Core/BattleState.hpp"
 #include "Lasers/LaserTypes.hpp"
+#include "Lasers/XWingCannon.hpp"
 #include "Render/Math.hpp"
 #include "Render/MeshId.hpp"
 #include "Render/RenderFrame.hpp"
@@ -83,22 +85,23 @@ void addBeam(RenderFrame& frame, Vec3 from, Vec3 to, float width, Vec3 color, fl
     frame.lasers.push_back(beam);
 }
 
-void addPlayerLasers(RenderFrame& frame, const CameraBasis& basis, bool firing) {
-    if (!firing) {
-        return;
-    }
+void addPlayerLasers(RenderFrame& frame, const CameraBasis& basis) {
+    cppgames::lasers::XWingCannonFrame cannonFrame{};
+    cannonFrame.origin[0] = frame.camera.position.x;
+    cannonFrame.origin[1] = frame.camera.position.y;
+    cannonFrame.origin[2] = frame.camera.position.z;
+    cannonFrame.right[0] = basis.right.x;
+    cannonFrame.right[1] = basis.right.y;
+    cannonFrame.right[2] = basis.right.z;
+    cannonFrame.up[0] = basis.up.x;
+    cannonFrame.up[1] = basis.up.y;
+    cannonFrame.up[2] = basis.up.z;
+    cannonFrame.forward[0] = basis.forward.x;
+    cannonFrame.forward[1] = basis.forward.y;
+    cannonFrame.forward[2] = basis.forward.z;
 
-    const Vec3 origin = frame.camera.position;
-    const Vec3 leftMuzzle =
-        origin + basis.right * -0.85f + basis.up * -0.45f + basis.forward * 6.0f;
-    const Vec3 rightMuzzle =
-        origin + basis.right * 0.85f + basis.up * -0.45f + basis.forward * 6.0f;
-    const Vec3 target = origin + basis.forward * 90.0f;
-    const auto& visual = cppgames::lasers::kXWingLaserVisual;
-    addBeam(frame, leftMuzzle, target, visual.width,
-            {visual.color[0], visual.color[1], visual.color[2]}, visual.intensity, 0);
-    addBeam(frame, rightMuzzle, target, visual.width,
-            {visual.color[0], visual.color[1], visual.color[2]}, visual.intensity, 0);
+    const auto beams = cppgames::lasers::buildXWingCannonBeams({}, cannonFrame, frame.time);
+    frame.lasers.insert(frame.lasers.end(), beams.begin(), beams.end());
 }
 
 void addTieFighters(RenderFrame& frame, float time, Vec3 around) {
@@ -156,8 +159,7 @@ void buildApproach(const BattleState& state, RenderFrame& frame) {
     addTieFighters(frame, t, {-12.0f, 6.0f, -58.0f});
 
     const CameraBasis basis = cameraBasis(frame);
-    const bool autoFire = std::fmod(t, 0.72f) < 0.09f;
-    addPlayerLasers(frame, basis, autoFire || state.firePulse > 0.0f);
+    addPlayerLasers(frame, basis);
 
     // Enemy fire streaks past the canopy.
     for (int index = 0; index < 2; ++index) {
@@ -220,8 +222,7 @@ void buildTrench(const BattleState& state, RenderFrame& frame) {
     }
 
     const CameraBasis basis = cameraBasis(frame);
-    const bool autoFire = std::fmod(t, 0.52f) < 0.075f;
-    addPlayerLasers(frame, basis, autoFire || state.firePulse > 0.0f);
+    addPlayerLasers(frame, basis);
 
     // Wall guns fire across the trench.
     for (int index = 0; index < 3; ++index) {
@@ -351,8 +352,7 @@ void buildGauntlet(const BattleState& state, RenderFrame& frame) {
     addTieFighters(frame, t, {-25.0f, 8.0f, cameraZ - 80.0f});
 
     const CameraBasis basis = cameraBasis(frame);
-    const bool autoFire = std::fmod(t, 0.46f) < 0.07f;
-    addPlayerLasers(frame, basis, autoFire || state.firePulse > 0.0f);
+    addPlayerLasers(frame, basis);
 
     // Star Destroyer turbolaser fire converges on the cockpit.
     for (int index = 0; index < 5; ++index) {

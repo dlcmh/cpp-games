@@ -1,5 +1,6 @@
 add_library(cppgames_lasers STATIC
     Sources/LaserRenderer.cpp
+    Sources/XWingCannon.cpp
 )
 
 target_include_directories(cppgames_lasers PUBLIC
