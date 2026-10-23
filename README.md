@@ -16,7 +16,7 @@ Specifications:
 - [03-SpaceBattle](Games/03-SpaceBattle/README.md) — a procedural 3D X-Wing
   trench-run demo with Death Star destruction, hyperspace, and a gauntlet.
 
-- [X-Wing Cockpit Lab](Games/03-SpaceBattle/Prototypes/01-XWingCockpit/README.md)
+- [X-Wing Cockpit Lab](Games/03-SpaceBattle/Prototypes/X-Wing%20Cockpit/README.md)
   — the interactive cockpit prototype for SpaceBattle.
 - Shared cockpit module: [Engine/Cockpit](Engine/Cockpit/README.md).
 

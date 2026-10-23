@@ -133,7 +133,7 @@ and its platform renderer is
 [`Engine/Cockpit/Include/Cockpit/CockpitOverlay.hpp`](../../Engine/Cockpit/Include/Cockpit/CockpitOverlay.hpp).
 SpaceBattle fills a `CockpitState` and calls `CockpitOverlay::encode` at the end
 of its render pass. The same module powers the
-[cockpit lab](Prototypes/01-XWingCockpit/README.md), where the visuals can
+[cockpit lab](<Prototypes/X-Wing Cockpit/README.md>), where the visuals can
 be iterated in isolation and then land in the game without copy/paste.
 
 The Slang compiler emits Metal Shading Language at build time. The app compiles
@@ -177,7 +177,7 @@ build; shader-only edits do not require a relink.
 ├── run.sh
 ├── Docs/screenshot.png
 ├── Prototypes/
-│   └── 01-XWingCockpit/     # standalone cockpit lab, same shared module
+│   └── X-Wing Cockpit/      # standalone cockpit lab, same shared module
 ├── Shaders/
 │   └── scene.slang          # 3D world, procedural materials, sky
 ├── ThirdParty/

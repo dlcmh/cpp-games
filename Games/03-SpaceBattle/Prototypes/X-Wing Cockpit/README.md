@@ -20,7 +20,7 @@ Same prerequisites as the games: macOS, Xcode Command Line Tools, CMake 3.25+.
 ```
 
 The app bundle is written to
-`/tmp/cpp-games-spacebattle-cockpit-lab-build/XWingCockpitLab.app`.
+`/tmp/cpp-games-xwing-cockpit-lab-build/XWingCockpitLab.app`.
 
 ## Controls
 

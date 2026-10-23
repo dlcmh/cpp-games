@@ -44,7 +44,7 @@ find_library(METAL_FRAMEWORK Metal REQUIRED)
 find_library(QUARTZCORE_FRAMEWORK QuartzCore REQUIRED)
 find_library(FOUNDATION_FRAMEWORK Foundation REQUIRED)
 
-# Shared engine module also consumed by Prototypes/01-XWingCockpit
+# Shared engine module also consumed by Prototypes/X-Wing Cockpit
 # inside this game directory.
 add_subdirectory(
     "${CMAKE_CURRENT_SOURCE_DIR}/../../Engine/Cockpit"

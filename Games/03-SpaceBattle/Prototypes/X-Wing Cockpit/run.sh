@@ -6,7 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../../../.." && pwd)"
 
 DEPS_DIR="${CPP_GAMES_DEPS_DIR:-${HOME}/Library/Caches/cpp-games/deps}"
-BUILD_DIR="${XWING_COCKPIT_BUILD_DIR:-/tmp/cpp-games-spacebattle-cockpit-lab-build}"
+BUILD_DIR="${XWING_COCKPIT_BUILD_DIR:-/tmp/cpp-games-xwing-cockpit-lab-build}"
 BUILD_ONLY=0
 STATS=0
 
@@ -22,7 +22,7 @@ Options:
 
 Environment:
   CPP_GAMES_DEPS_DIR       Dependency cache (default: ~/Library/Caches/cpp-games/deps)
-  XWING_COCKPIT_BUILD_DIR  Build directory (default: /tmp/cpp-games-spacebattle-cockpit-lab-build)
+  XWING_COCKPIT_BUILD_DIR  Build directory (default: /tmp/cpp-games-xwing-cockpit-lab-build)
 EOF
 }
 

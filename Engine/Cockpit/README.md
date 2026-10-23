@@ -1,7 +1,7 @@
 # Cockpit engine module
 
 Shared X-Wing cockpit overlay used by both [Space Battle](../../Games/03-SpaceBattle/README.md)
-and the [cockpit lab](../../Games/03-SpaceBattle/Prototypes/01-XWingCockpit/README.md).
+and the [cockpit lab](../../Games/03-SpaceBattle/Prototypes/X-Wing%20Cockpit/README.md).
 
 ## Files
 
