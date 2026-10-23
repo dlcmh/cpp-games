@@ -251,18 +251,7 @@ void buildTrench(const BattleState& state, RenderFrame& frame) {
         addOpaque(frame, tie);
     }
 
-    const CameraBasis basis = cameraBasis(frame);
-    addPlayerLasers(frame, basis);
-
-    // Wall guns fire across the trench.
-    for (int index = 0; index < 3; ++index) {
-        const float zig = std::fmod(t * 0.7f + static_cast<float>(index) * 0.31f, 1.0f);
-        const float z = cameraZ - 18.0f - zig * 60.0f;
-        const float side = (index % 2 == 0) ? -1.0f : 1.0f;
-        addBeam(frame, {side * 4.6f, 1.0f, z}, {side * -4.6f, 1.0f, z - 16.0f}, 0.06f,
-                {1.0f, 0.25f, 0.15f}, 0.8f, 0);
-    }
-
+    // No laser fire during the trench run; the torpedo is the only weapon.
     // Exhaust port on the trench centreline. The camera is aimed so this exact
     // point projects to the HUD reticle.
     DrawItem port{};
