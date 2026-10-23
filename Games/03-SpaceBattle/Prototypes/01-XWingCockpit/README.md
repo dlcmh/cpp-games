@@ -1,11 +1,11 @@
 # X-Wing Cockpit Lab
 
 A focused, standalone demo for evaluating the X-Wing cockpit overlay before it
-is used in [Space Battle](../../Games/03-SpaceBattle/README.md).
+is used in [Space Battle](../../README.md).
 
 ![X-Wing Cockpit Lab](Docs/screenshot.png)
 
-The same shared [Engine/Cockpit](../../Engine/Cockpit/README.md) module is used
+The same shared [Engine/Cockpit](../../../../Engine/Cockpit/README.md) module is used
 by both the lab and the game. There is no copied cockpit shader or duplicated
 pipeline setup.
 
@@ -20,7 +20,7 @@ Same prerequisites as the games: macOS, Xcode Command Line Tools, CMake 3.25+.
 ```
 
 The app bundle is written to
-`/tmp/cpp-games-cockpit-lab-build/XWingCockpitLab.app`.
+`/tmp/cpp-games-spacebattle-cockpit-lab-build/XWingCockpitLab.app`.
 
 ## Controls
 
@@ -60,7 +60,7 @@ and whether the auto-demo is running.
 
 ## Shared state
 
-The contract is [`CockpitState`](../../Engine/Cockpit/Include/Cockpit/CockpitState.hpp):
+The contract is [`CockpitState`](../../../../Engine/Cockpit/Include/Cockpit/CockpitState.hpp):
 
 ```text
 time, phase, phaseTime, flash, jump, steer, firing,
@@ -85,7 +85,7 @@ does not require relinking either app.
 
 ## Verification
 
-`Tools/check.sh` discovers both `Games/*` and `Prototypes/*`. The pre-commit hook
-builds the lab and every game with `-Werror`, formats changed sources, and cleans
-includes. The shared engine sources are checked against the SpaceBattle compile
-database.
+`Tools/check.sh` discovers CMake projects under `Games/`, including this nested
+prototype. The pre-commit hook builds the lab and every game with `-Werror`,
+formats changed sources, and cleans includes. The shared engine sources are
+checked against the SpaceBattle compile database.

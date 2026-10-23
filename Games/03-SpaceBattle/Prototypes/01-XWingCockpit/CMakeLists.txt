@@ -45,7 +45,7 @@ find_library(QUARTZCORE_FRAMEWORK QuartzCore REQUIRED)
 find_library(FOUNDATION_FRAMEWORK Foundation REQUIRED)
 
 add_subdirectory(
-    "${CMAKE_CURRENT_SOURCE_DIR}/../../Engine/Cockpit"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../../../Engine/Cockpit"
     "${CMAKE_BINARY_DIR}/engine-cockpit"
 )
 

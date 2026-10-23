@@ -98,12 +98,9 @@ is_build_input() {
 }
 
 PROJECTS=()
-for project_root in Games Prototypes; do
-    [[ -d "${ROOT}/${project_root}" ]] || continue
-    while IFS= read -r cmake_file; do
-        [[ -n "${cmake_file}" ]] && PROJECTS+=("$(dirname "${cmake_file}")")
-    done < <(find "${ROOT}/${project_root}" -mindepth 2 -maxdepth 2 -name CMakeLists.txt -print | sort)
-done
+while IFS= read -r cmake_file; do
+    [[ -n "${cmake_file}" ]] && PROJECTS+=("$(dirname "${cmake_file}")")
+done < <(find "${ROOT}/Games" -mindepth 2 -maxdepth 5 -name CMakeLists.txt -print | sort)
 
 if [[ "${#PROJECTS[@]}" -eq 0 ]]; then
     echo "[check] No game or prototype projects found."
@@ -114,11 +111,11 @@ CANDIDATES=()
 if [[ "${MODE}" == "staged" ]]; then
     while IFS= read -r path; do
         [[ -n "${path}" ]] && CANDIDATES+=("${path}")
-    done < <(git -C "${ROOT}" diff --cached --name-only --diff-filter=ACMR -- Games Prototypes Engine)
+    done < <(git -C "${ROOT}" diff --cached --name-only --diff-filter=ACMR -- Games Engine)
 else
     while IFS= read -r path; do
         [[ -n "${path}" ]] && CANDIDATES+=("${path}")
-    done < <(git -C "${ROOT}" ls-files -- Games Prototypes Engine)
+    done < <(git -C "${ROOT}" ls-files -- Games Engine)
 fi
 
 CXX_FILES=()
@@ -198,21 +195,30 @@ if [[ "${FIX}" -eq 1 ]] && [[ "${MODE}" == "staged" ]] && [[ "${#CXX_FILES[@]}" 
 fi
 
 project_build_dir() {
-    printf '%s/%s\n' "${CHECK_ROOT}" "$(basename "$1")"
+    local relative="${1#"${ROOT}/"}"
+    printf '%s/%s\n' "${CHECK_ROOT}" "${relative//\//-}"
 }
 
 file_belongs_to_project() {
     local file="$1"
     local project="$2"
-    case "${file}" in
-        "${project}"/*) return 0 ;;
-    esac
-    if [[ "${project}" == "${ENGINE_PROJECT}" ]]; then
+    local owner=""
+
+    for candidate in "${PROJECTS[@]}"; do
         case "${file}" in
-            "${ROOT}/Engine"/*) return 0 ;;
+            "${candidate}"/*)
+                if [[ "${#candidate}" -gt "${#owner}" ]]; then
+                    owner="${candidate}"
+                fi
+                ;;
+        esac
+    done
+    if [[ -z "${owner}" ]] && [[ "${project}" == "${ENGINE_PROJECT}" ]]; then
+        case "${file}" in
+            "${ROOT}/Engine"/*) owner="${project}" ;;
         esac
     fi
-    return 1
+    [[ "${owner}" == "${project}" ]]
 }
 
 build_project() {
