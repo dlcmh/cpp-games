@@ -49,8 +49,9 @@ overlay is visible.
 `LaserDemo::beams()` asks the shared `XWingCannon` builder for the volley
 stream. The lab and SpaceBattle use the same muzzle offsets, bolt speed/length,
 0.62 s fire period, and `kXWingLaserVisual` preset, so the starting point and
-cadence match. The renderer then projects the beams to screen space and draws
-additive glowing segments.
+cadence match. The bolts converge on and disappear into the shared HUD reticle.
+The renderer then projects the beams to screen space and draws additive glowing
+segments.
 
 ## Pluggable into SpaceBattle
 

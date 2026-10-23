@@ -1,5 +1,6 @@
 #include "Render/SceneBuilder.hpp"
 
+#include "Cockpit/CockpitState.hpp"
 #include "Core/BattleState.hpp"
 #include "Lasers/LaserTypes.hpp"
 #include "Lasers/XWingCannon.hpp"
@@ -100,7 +101,10 @@ void addPlayerLasers(RenderFrame& frame, const CameraBasis& basis) {
     cannonFrame.forward[1] = basis.forward.y;
     cannonFrame.forward[2] = basis.forward.z;
 
-    const auto beams = cppgames::lasers::buildXWingCannonBeams({}, cannonFrame, frame.time);
+    cppgames::lasers::XWingCannonSettings settings{};
+    settings.aimNdcX = -frame.steer * cppgames::cockpit::kReticleSteerShift / 1.777f;
+    settings.aimNdcY = cppgames::cockpit::kReticleCenterY;
+    const auto beams = cppgames::lasers::buildXWingCannonBeams(settings, cannonFrame, frame.time);
     frame.lasers.insert(frame.lasers.end(), beams.begin(), beams.end());
 }
 

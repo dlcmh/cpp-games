@@ -1,4 +1,5 @@
 #include "Demo/LaserDemo.hpp"
+#include "Cockpit/CockpitState.hpp"
 #include "Lasers/LaserTypes.hpp"
 #include "Lasers/XWingCannon.hpp"
 
@@ -72,7 +73,11 @@ std::vector<cppgames::lasers::LaserBeam> LaserDemo::beams() const {
             manualAge = age;
         }
     }
-    return cppgames::lasers::buildXWingCannonBeams({}, frame, cockpit_.time, autoFire_, manualAge);
+    cppgames::lasers::XWingCannonSettings settings{};
+    settings.aimNdcX = -cockpit_.steer * cppgames::cockpit::kReticleSteerShift / 1.777f;
+    settings.aimNdcY = cppgames::cockpit::kReticleCenterY;
+    return cppgames::lasers::buildXWingCannonBeams(settings, frame, cockpit_.time, autoFire_,
+                                                   manualAge);
 }
 
 std::string LaserDemo::windowTitle() const {

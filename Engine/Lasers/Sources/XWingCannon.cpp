@@ -12,40 +12,56 @@ namespace {
 void appendVolley(std::vector<LaserBeam>& beams, const XWingCannonSettings& settings,
                   const XWingCannonFrame& frame, float time, float age) {
     const float travel = age * settings.boltSpeed;
-    if (travel > settings.travelRange) {
+    const float endTravel = std::min(travel + settings.boltLength, settings.convergenceDistance);
+    if (travel >= settings.convergenceDistance || endTravel <= travel) {
         return;
     }
 
-    const float u0 = std::clamp(travel / settings.travelRange, 0.0f, 1.0f);
-    const float u1 = std::clamp((travel + settings.boltLength) / settings.travelRange, 0.0f, 1.0f);
-    for (int side = -1; side <= 1; side += 2) {
-        const float x0 = static_cast<float>(side) * (settings.muzzleSide - 0.95f * u0);
-        const float x1 = static_cast<float>(side) * (settings.muzzleSide - 0.95f * u1);
-        const float y0 = settings.muzzleUp + 0.90f * u0;
-        const float y1 = settings.muzzleUp + 0.90f * u1;
-        const float z0 = settings.muzzleForward + travel;
-        const float z1 = z0 + settings.boltLength;
+    // The stream converges on the shared cockpit reticle. aimNdc is in
+    // normalized device coordinates, so this is the same screen point the HUD
+    // draws whether we are in the lab or the game.
+    const float targetX =
+        settings.aimNdcX * settings.convergenceDistance / settings.projectionScale;
+    const float targetY =
+        settings.aimNdcY * settings.convergenceDistance / settings.projectionScale;
+    const float targetWorldX = frame.origin[0] + frame.right[0] * targetX + frame.up[0] * targetY +
+                               frame.forward[0] * settings.convergenceDistance;
+    const float targetWorldY = frame.origin[1] + frame.right[1] * targetX + frame.up[1] * targetY +
+                               frame.forward[1] * settings.convergenceDistance;
+    const float targetWorldZ = frame.origin[2] + frame.right[2] * targetX + frame.up[2] * targetY +
+                               frame.forward[2] * settings.convergenceDistance;
 
-        const float startX =
-            frame.origin[0] + frame.right[0] * x0 + frame.up[0] * y0 + frame.forward[0] * z0;
-        const float startY =
-            frame.origin[1] + frame.right[1] * x0 + frame.up[1] * y0 + frame.forward[1] * z0;
-        const float startZ =
-            frame.origin[2] + frame.right[2] * x0 + frame.up[2] * y0 + frame.forward[2] * z0;
-        const float endX =
-            frame.origin[0] + frame.right[0] * x1 + frame.up[0] * y1 + frame.forward[0] * z1;
-        const float endY =
-            frame.origin[1] + frame.right[1] * x1 + frame.up[1] * y1 + frame.forward[1] * z1;
-        const float endZ =
-            frame.origin[2] + frame.right[2] * x1 + frame.up[2] * y1 + frame.forward[2] * z1;
+    for (int side = -1; side <= 1; side += 2) {
+        const float sideOffset = settings.muzzleSide * static_cast<float>(side);
+        const float startWorldX = frame.origin[0] + frame.right[0] * sideOffset +
+                                  frame.up[0] * settings.muzzleUp +
+                                  frame.forward[0] * settings.muzzleForward;
+        const float startWorldY = frame.origin[1] + frame.right[1] * sideOffset +
+                                  frame.up[1] * settings.muzzleUp +
+                                  frame.forward[1] * settings.muzzleForward;
+        const float startWorldZ = frame.origin[2] + frame.right[2] * sideOffset +
+                                  frame.up[2] * settings.muzzleUp +
+                                  frame.forward[2] * settings.muzzleForward;
+
+        const float axisX = targetWorldX - startWorldX;
+        const float axisY = targetWorldY - startWorldY;
+        const float axisZ = targetWorldZ - startWorldZ;
+        const float axisLength = std::sqrt(axisX * axisX + axisY * axisY + axisZ * axisZ);
+        if (axisLength < 0.0001f) {
+            continue;
+        }
+
+        const float directionX = axisX / axisLength;
+        const float directionY = axisY / axisLength;
+        const float directionZ = axisZ / axisLength;
 
         LaserBeam beam{};
-        beam.start[0] = startX;
-        beam.start[1] = startY;
-        beam.start[2] = startZ;
-        beam.end[0] = endX;
-        beam.end[1] = endY;
-        beam.end[2] = endZ;
+        beam.start[0] = startWorldX + directionX * travel;
+        beam.start[1] = startWorldY + directionY * travel;
+        beam.start[2] = startWorldZ + directionZ * travel;
+        beam.end[0] = startWorldX + directionX * endTravel;
+        beam.end[1] = startWorldY + directionY * endTravel;
+        beam.end[2] = startWorldZ + directionZ * endTravel;
         beam.width = kXWingLaserVisual.width;
         beam.color[0] = kXWingLaserVisual.color[0];
         beam.color[1] = kXWingLaserVisual.color[1];
@@ -66,8 +82,9 @@ std::vector<LaserBeam> buildXWingCannonBeams(const XWingCannonSettings& settings
 
     if (automatic) {
         const float phase = std::fmod(std::max(time, 0.0f), settings.firePeriod);
-        const int volleys =
-            static_cast<int>(settings.travelRange / (settings.boltSpeed * settings.firePeriod)) + 1;
+        const int volleys = static_cast<int>(settings.convergenceDistance /
+                                             (settings.boltSpeed * settings.firePeriod)) +
+                            1;
         for (int index = 0; index < volleys; ++index) {
             appendVolley(beams, settings, frame, time,
                          phase + static_cast<float>(index) * settings.firePeriod);

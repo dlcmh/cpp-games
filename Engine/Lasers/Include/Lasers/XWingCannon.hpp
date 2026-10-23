@@ -22,7 +22,10 @@ struct XWingCannonSettings {
     float muzzleSide{1.25f};
     float muzzleUp{-0.55f};
     float muzzleForward{4.0f};
-    float travelRange{125.0f};
+    float convergenceDistance{70.0f};
+    float aimNdcX{0.0f};
+    float aimNdcY{0.07f};
+    float projectionScale{1.7879f};
 };
 
 // Produces the same continuous four-cannon volley stream in the lab and the

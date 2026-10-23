@@ -180,6 +180,7 @@ float4 fragmentMain(VSOutput input) : SV_Target
     if (cockpit.showHud > 0.5) {
     const float2 hudP = p / max(cockpit.hudScale, 0.2);
     // HUD reticle.
+    // Keep in sync with kReticleCenterY / kReticleSteerShift in CockpitState.hpp.
     const float2 reticleCentre = float2(-cockpit.steer * 0.035, 0.07);
     const float reticleRadius = length(hudP - reticleCentre);
     const float ring = 1.0 - smoothstep(0.0, 0.004, abs(reticleRadius - 0.078));

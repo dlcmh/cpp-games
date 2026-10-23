@@ -2,6 +2,11 @@
 
 namespace cppgames::cockpit {
 
+// Shared HUD reticle placement, in aspect-corrected normalized device
+// coordinates. Keep in sync with reticleCentre in cockpit.slang.
+inline constexpr float kReticleCenterY = 0.07f;
+inline constexpr float kReticleSteerShift = 0.035f;
+
 // Renderer-neutral inputs for the X-Wing cockpit overlay. Games fill this from
 // gameplay state; the shared CockpitOverlay converts it to GPU uniforms.
 struct CockpitState {
