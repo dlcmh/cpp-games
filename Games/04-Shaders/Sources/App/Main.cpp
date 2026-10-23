@@ -114,23 +114,15 @@ MTL::RenderPipelineState* buildPipeline(MTL::Device* device, const std::string& 
     return pipeline;
 }
 
-void setTitle(SDL_Window* window, int example) {
-    char title[128];
-    SDL_snprintf(title, sizeof(title), "Shaders - Example %d", example);
-    SDL_SetWindowTitle(window, title);
+void setTitle(SDL_Window* window, const std::string& example) {
+    const std::string title = "Shaders - " + example;
+    SDL_SetWindowTitle(window, title.c_str());
 }
 
 }  // namespace
 
 int main(int argc, char* argv[]) {
-    int example = 1;
-    if (argc > 1) {
-        char* end = nullptr;
-        const long parsed = std::strtol(argv[1], &end, 10);
-        if (end != argv[1] && *end == '\0' && parsed > 0 && parsed < 1000) {
-            example = static_cast<int>(parsed);
-        }
-    }
+    const std::string example = argc > 1 ? argv[1] : "1";
 
     SDL_SetAppMetadata("Shaders", "0.1.0", "com.dlcmh.cppgames.shaders");
     SDL_SetHint(SDL_HINT_RENDER_DRIVER, "metal");
@@ -173,8 +165,7 @@ int main(int argc, char* argv[]) {
     layer->setPixelFormat(MTL::PixelFormatBGRA8Unorm);
     layer->setFramebufferOnly(true);
 
-    const std::filesystem::path shaderPath =
-        shaderDirectory() / (std::to_string(example) + ".metal");
+    const std::filesystem::path shaderPath = shaderDirectory() / (example + ".metal");
     const std::string shaderSource = readTextFile(shaderPath);
     std::string pipelineError;
     MTL::RenderPipelineState* pipeline = buildPipeline(device, shaderSource, pipelineError);

@@ -9,10 +9,14 @@ the rectangle and circle examples are so similar.
 ## Run
 
 ```sh
-./run.sh 1   # rectangle outline
-./run.sh 2   # filled rectangle
-./run.sh 1 --build-only
+./run.sh unfilled-rectangle
+./run.sh 1                   # the same shader by its short name
+./run.sh 2
+./run.sh 3
+./run.sh unfilled-rectangle --build-only
 ```
+
+The example name is the shader file name without `.slang`.
 
 The app is written to `/tmp/cpp-games-shaders-build/Shaders.app`.
 
@@ -20,8 +24,9 @@ The app is written to `/tmp/cpp-games-shaders-build/Shaders.app`.
 
 | Example | Shader | What it shows |
 | --- | --- | --- |
-| 1 | `Shaders/1.slang` | A fullscreen triangle and a centred rectangle outline. |
-| 2 | `Shaders/2.slang` | The same rectangle filled with a flat colour. |
+| unfilled-rectangle | `Shaders/unfilled-rectangle.slang` | A fullscreen triangle and a centred rectangle outline. |
+| 1 | `Shaders/1.slang` | The same rectangle outline under a short name. |
+| 2 | `Shaders/2.slang` | The rectangle filled with a flat colour. |
 | 3 | `Shaders/3.slang` | The rectangle outline replaced by a circle outline. |
 
 Both shaders use a shared `Uniforms` struct containing the pixel resolution and
@@ -37,12 +42,12 @@ Adding an example only needs a new shader file:
 3. Run:
 
 ```sh
-./run.sh 3
+./run.sh my-shape
 ```
 
 That is it. The CMake build globs `Shaders/*.slang`, compiles each one to
-`3.metal`, and bundles it with the app. `run.sh` passes the number to the app,
-which loads `<number>.metal` by name.
+`my-shape.metal`, and bundles it with the app. `run.sh` passes the name to the
+app, which loads `<name>.metal`.
 
 A shader needs these two entry points:
 

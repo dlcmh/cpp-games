@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build and launch one of the shader examples: ./run.sh 1 or ./run.sh 2.
+# Build and launch a shader example: ./run.sh 1 or ./run.sh unfilled-rectangle.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -14,10 +14,10 @@ usage() {
     cat <<'USAGE'
 Usage: ./run.sh [example] [--build-only]
 
-Examples:
-  1  Rectangle outline
-  2  Filled rectangle
-  N  Any Shaders/N.slang discovered at configure time.
+The example is the shader file name without .slang:
+  ./run.sh 1
+  ./run.sh unfilled-rectangle
+  ./run.sh 2
 
 Environment:
   CPP_GAMES_DEPS_DIR  Dependency cache (default: ~/Library/Caches/cpp-games/deps)
@@ -27,9 +27,6 @@ USAGE
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        [1-9]|[1-9][0-9]*)
-            EXAMPLE="$1"
-            ;;
         --build-only)
             BUILD_ONLY=1
             ;;
@@ -37,10 +34,13 @@ while [[ $# -gt 0 ]]; do
             usage
             exit 0
             ;;
-        *)
-            echo "Unknown argument: $1" >&2
+        -*)
+            echo "Unknown option: $1" >&2
             usage >&2
             exit 1
+            ;;
+        *)
+            EXAMPLE="$1"
             ;;
     esac
     shift
