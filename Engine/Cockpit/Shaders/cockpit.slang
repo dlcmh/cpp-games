@@ -136,14 +136,6 @@ void drawPanel(inout float3 rgb, inout float alpha, float d, float3 color)
     layer(rgb, alpha, float3(0.0), lineMask(d + 0.010, 0.004) * 0.55);
 }
 
-void drawBolt(inout float3 rgb, inout float alpha, float2 p, float radius)
-{
-    const float body = sdCircle(p, radius);
-    layer(rgb, alpha, float3(0.055, 0.055, 0.052), fillMask(body));
-    layer(rgb, alpha, float3(0.56, 0.52, 0.45), lineMask(body, 0.0025));
-    layer(rgb, alpha, float3(0.22, 0.20, 0.18), fillMask(sdCircle(p + float2(0.004, 0.004), radius * 0.35)));
-}
-
 void drawButton(inout float3 rgb, inout float alpha, float2 p, float2 centre, float radius,
                 float3 color)
 {
@@ -204,14 +196,6 @@ float4 fragmentMain(VSOutput input) : SV_Target
         drawStrut(rgb, alpha, p, float2(aspect * 0.94, 0.96), float2(aspect * 1.00, -0.42),
                   0.004, trim);
 
-        // Bolts down each A-pillar.
-        for (int i = 0; i < 7; ++i) {
-            const float u = 0.10 + float(i) * 0.125;
-            const float2 left = lerp(float2(-aspect * 1.04, 1.14), float2(-0.55, -0.44), u);
-            const float2 right = lerp(float2(aspect * 1.04, 1.14), float2(0.55, -0.44), u);
-            drawBolt(rgb, alpha, p - left, 0.006);
-            drawBolt(rgb, alpha, p - right, 0.006);
-        }
     }
 
     if (cockpit.showDashboard > 0.5) {
@@ -224,12 +208,6 @@ float4 fragmentMain(VSOutput input) : SV_Target
         layer(rgb, alpha, panelBase, dash);
         layer(rgb, alpha, trim, (1.0 - smoothstep(0.0, 0.004, abs(p.y - dashTop))) * 0.55);
         layer(rgb, alpha, shadow, (1.0 - smoothstep(0.0, 0.006, abs(p.y - dashTop + 0.018))) * 0.55);
-
-        // Rivets along the upper dash lip.
-        for (int i = 0; i < 15; ++i) {
-            const float x = -0.84 + float(i) * 0.12;
-            drawBolt(rgb, alpha, p - float2(x, dashboardTop(x) - 0.030), 0.005);
-        }
 
         // Panel seams and side instrument bays.
         for (int side = -1; side <= 1; side += 2) {
