@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Format, clean up includes, and compile-check every game locally.
+# Format, clean up includes, and compile-check every game and lab locally.
 #
 # Default mode checks all C++ sources without modifying them. The pre-commit
 # hook calls `--staged --fix`, which formats and fixes only the staged games,
@@ -19,7 +19,7 @@ usage() {
 Usage: Tools/check.sh [options]
 
 Options:
-  --all       Check all files in every game (default).
+  --all       Check all files in every game and lab (default).
   --staged    Check only files staged for the next commit.
   --fix       Apply clang-format and include-cleaner fixes, then re-stage
               files when running with --staged.
@@ -103,7 +103,7 @@ while IFS= read -r cmake_file; do
 done < <(find "${ROOT}/Games" -mindepth 2 -maxdepth 5 -name CMakeLists.txt -print | sort)
 
 if [[ "${#PROJECTS[@]}" -eq 0 ]]; then
-    echo "[check] No game or prototype projects found."
+    echo "[check] No game or lab projects found."
     exit 0
 fi
 

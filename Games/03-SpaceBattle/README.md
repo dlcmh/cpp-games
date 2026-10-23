@@ -133,10 +133,10 @@ and its platform renderer is
 [`Engine/Cockpit/Include/Cockpit/CockpitOverlay.hpp`](../../Engine/Cockpit/Include/Cockpit/CockpitOverlay.hpp).
 SpaceBattle fills a `CockpitState` and calls `CockpitOverlay::encode` at the end
 of its render pass. The same module powers the
-[cockpit lab](<Prototypes/X-Wing Cockpit/README.md>), where the visuals can
+[cockpit lab](<Labs/X-Wing Cockpit/README.md>), where the visuals can
 be iterated in isolation and then land in the game without copy/paste.
 Laser visuals live in [Engine/Lasers](../../Engine/Lasers/README.md) and are
-iterated in the [laser lab](<Prototypes/X-Wing Lasers/README.md>).
+iterated in the [laser lab](<Labs/X-Wing Lasers/README.md>).
 
 The Slang compiler emits Metal Shading Language at build time. The app compiles
 the generated `.metal` source at runtime, so development works with only the
@@ -177,7 +177,7 @@ build; shader-only edits do not require a relink.
 ├── README.md
 ├── run.sh
 ├── Docs/screenshot.png
-├── Prototypes/
+├── Labs/
 │   ├── X-Wing Cockpit/      # standalone cockpit lab, same shared module
 │   └── X-Wing Lasers/       # standalone laser lab, same shared module
 ├── Shaders/

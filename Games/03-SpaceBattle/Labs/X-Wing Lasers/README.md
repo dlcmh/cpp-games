@@ -17,7 +17,7 @@ Same prerequisites as the games: macOS, Xcode Command Line Tools, CMake 3.25+.
 ```
 
 The app bundle is written to
-`/tmp/cpp-games-xwing-laser-lab-build/XWingLaserLab.app`.
+`/tmp/cpp-games-labs-laser-build/XWingLaserLab.app`.
 
 ## Controls
 
@@ -60,10 +60,10 @@ beam data, so changing the laser look does not touch game logic.
 
 Because the effect is screen-space, beams are not depth-occluded by asteroids or
 the Star Destroyer. That trade keeps the shader cheap and the core perfectly
-centered; it is the current prototype behavior.
+centered; it is the current lab behavior.
 
 ## Verification
 
-`Tools/check.sh` discovers nested prototypes under `Games/`, builds this lab and
+`Tools/check.sh` discovers nested labs under `Games/`, builds this lab and
 every game with `-Werror`, formats changed sources, and cleans includes. The
 shared laser source is checked against the SpaceBattle compile database.

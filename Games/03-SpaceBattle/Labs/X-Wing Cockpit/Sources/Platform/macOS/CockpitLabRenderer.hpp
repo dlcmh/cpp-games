@@ -16,12 +16,12 @@ struct NativeSurface {
 // Small standalone renderer for the cockpit lab: a procedural starfield
 // backdrop plus the shared cockpit overlay. It deliberately has no game scene,
 // so the cockpit can be evaluated and iterated on in isolation.
-class PrototypeRenderer {
+class CockpitLabRenderer {
 public:
-    PrototypeRenderer();
-    ~PrototypeRenderer();
-    PrototypeRenderer(const PrototypeRenderer&) = delete;
-    PrototypeRenderer& operator=(const PrototypeRenderer&) = delete;
+    CockpitLabRenderer();
+    ~CockpitLabRenderer();
+    CockpitLabRenderer(const CockpitLabRenderer&) = delete;
+    CockpitLabRenderer& operator=(const CockpitLabRenderer&) = delete;
 
     bool initialize(const NativeSurface& surface, const std::string& shaderDirectory,
                     std::string& error);

@@ -70,7 +70,7 @@ add_executable(XWingCockpitLab
     Sources/App/Main.cpp
     Sources/Demo/CockpitDemo.cpp
     Sources/Platform/macOS/MetalImpl.mm
-    Sources/Platform/macOS/PrototypeRenderer.cpp
+    Sources/Platform/macOS/CockpitLabRenderer.cpp
 )
 
 target_include_directories(XWingCockpitLab PRIVATE Sources)

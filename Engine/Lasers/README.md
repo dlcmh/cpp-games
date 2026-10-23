@@ -1,7 +1,7 @@
 # Laser engine module
 
 Reusable X-Wing laser rendering shared by SpaceBattle and the
-[laser lab](../../Games/03-SpaceBattle/Prototypes/X-Wing%20Lasers/README.md).
+[laser lab](../../Games/03-SpaceBattle/Labs/X-Wing%20Lasers/README.md).
 
 ## API
 

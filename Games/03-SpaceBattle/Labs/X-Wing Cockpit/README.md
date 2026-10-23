@@ -20,7 +20,7 @@ Same prerequisites as the games: macOS, Xcode Command Line Tools, CMake 3.25+.
 ```
 
 The app bundle is written to
-`/tmp/cpp-games-xwing-cockpit-lab-build/XWingCockpitLab.app`.
+`/tmp/cpp-games-labs-cockpit-build/XWingCockpitLab.app`.
 
 ## Controls
 
@@ -51,7 +51,7 @@ and whether the auto-demo is running.
   planet limb, a distant Death Star target, and hyperspace streaks.
 - `Engine/Cockpit`: the real, shared cockpit overlay, compiled from the same
   shader that SpaceBattle uses.
-- [`Sources/Platform/macOS/PrototypeRenderer.cpp`](Sources/Platform/macOS/PrototypeRenderer.cpp):
+- [`Sources/Platform/macOS/CockpitLabRenderer.cpp`](Sources/Platform/macOS/CockpitLabRenderer.cpp):
   owns the SDL Metal layer, the backdrop pipeline, and the overlay encode. It
   deliberately has no game scene, depth buffer, or 3D renderer.
 - [`Sources/Demo/CockpitDemo.cpp`](Sources/Demo/CockpitDemo.cpp): presentation
@@ -86,6 +86,6 @@ does not require relinking either app.
 ## Verification
 
 `Tools/check.sh` discovers CMake projects under `Games/`, including this nested
-prototype. The pre-commit hook builds the lab and every game with `-Werror`,
+lab. The pre-commit hook builds the lab and every game with `-Werror`,
 formats changed sources, and cleans includes. The shared engine sources are
 checked against the SpaceBattle compile database.

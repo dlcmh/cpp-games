@@ -1,4 +1,4 @@
-#include "Platform/macOS/PrototypeRenderer.hpp"
+#include "Platform/macOS/CockpitLabRenderer.hpp"
 
 #include "Cockpit/CockpitOverlay.hpp"
 #include "Cockpit/CockpitState.hpp"
@@ -100,7 +100,7 @@ MTL::RenderPipelineState* makeBackdropPipeline(MTL::Device* device, const std::s
 
 }  // namespace
 
-struct PrototypeRenderer::Impl {
+struct CockpitLabRenderer::Impl {
     NS::SharedPtr<MTL::Device> device;
     NS::SharedPtr<MTL::CommandQueue> commandQueue;
     NS::SharedPtr<MTL::RenderPipelineState> backdropPipeline;
@@ -110,12 +110,12 @@ struct PrototypeRenderer::Impl {
     int pixelHeight{0};
 };
 
-PrototypeRenderer::PrototypeRenderer() : impl_(std::make_unique<Impl>()) {}
+CockpitLabRenderer::CockpitLabRenderer() : impl_(std::make_unique<Impl>()) {}
 
-PrototypeRenderer::~PrototypeRenderer() = default;
+CockpitLabRenderer::~CockpitLabRenderer() = default;
 
-bool PrototypeRenderer::initialize(const NativeSurface& surface, const std::string& shaderDirectory,
-                                   std::string& error) {
+bool CockpitLabRenderer::initialize(const NativeSurface& surface,
+                                    const std::string& shaderDirectory, std::string& error) {
     NS::AutoreleasePool* pool = NS::AutoreleasePool::alloc()->init();
 
     if (surface.metalLayer == nullptr) {
@@ -163,7 +163,7 @@ bool PrototypeRenderer::initialize(const NativeSurface& surface, const std::stri
     return true;
 }
 
-void PrototypeRenderer::resize(int pixelWidth, int pixelHeight) {
+void CockpitLabRenderer::resize(int pixelWidth, int pixelHeight) {
     if (impl_->layer == nullptr || pixelWidth <= 0 || pixelHeight <= 0) {
         return;
     }
@@ -177,8 +177,8 @@ void PrototypeRenderer::resize(int pixelWidth, int pixelHeight) {
         CGSizeMake(static_cast<CGFloat>(pixelWidth), static_cast<CGFloat>(pixelHeight)));
 }
 
-bool PrototypeRenderer::draw(const cppgames::cockpit::CockpitState& cockpitState,
-                             std::string& error) {
+bool CockpitLabRenderer::draw(const cppgames::cockpit::CockpitState& cockpitState,
+                              std::string& error) {
     if (impl_->pixelWidth <= 0 || impl_->pixelHeight <= 0) {
         return true;
     }

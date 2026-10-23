@@ -2,7 +2,7 @@
 #include <SDL3/SDL_metal.h>
 
 #include "Demo/CockpitDemo.hpp"
-#include "Platform/macOS/PrototypeRenderer.hpp"
+#include "Platform/macOS/CockpitLabRenderer.hpp"
 
 #include <algorithm>
 #include <cstdlib>
@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
     int pixelHeight = 0;
     SDL_GetWindowSizeInPixels(window, &pixelWidth, &pixelHeight);
 
-    cockpitlab::PrototypeRenderer renderer;
+    cockpitlab::CockpitLabRenderer renderer;
     std::string rendererError;
     const cockpitlab::NativeSurface surface{metalLayer, pixelWidth, pixelHeight};
     if (!renderer.initialize(surface, resolveShaderDirectory().string(), rendererError)) {
