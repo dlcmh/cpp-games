@@ -15,6 +15,7 @@ Specifications:
   with selectable, independently cycling procedural skins.
 - [03-SpaceBattle](Games/03-SpaceBattle/README.md) — a procedural 3D X-Wing
   trench-run demo with Death Star destruction, hyperspace, and a gauntlet.
+- [04-Shaders](Games/04-Shaders/README.md) — small Slang shader examples.
 
 ## Labs
 
