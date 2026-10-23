@@ -18,7 +18,10 @@ Specifications:
 
 - [X-Wing Cockpit Lab](Games/03-SpaceBattle/Prototypes/X-Wing%20Cockpit/README.md)
   — the interactive cockpit prototype for SpaceBattle.
+- [X-Wing Laser Lab](Games/03-SpaceBattle/Prototypes/X-Wing%20Lasers/README.md)
+  — the interactive laser prototype for SpaceBattle.
 - Shared cockpit module: [Engine/Cockpit](Engine/Cockpit/README.md).
+- Shared laser module: [Engine/Lasers](Engine/Lasers/README.md).
 
 ## Development
 

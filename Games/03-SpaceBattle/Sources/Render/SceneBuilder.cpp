@@ -1,5 +1,6 @@
 #include "Render/SceneBuilder.hpp"
 #include "Core/BattleState.hpp"
+#include "Lasers/LaserTypes.hpp"
 #include "Render/Math.hpp"
 #include "Render/MeshId.hpp"
 #include "Render/RenderFrame.hpp"
@@ -63,14 +64,23 @@ void addSphere(RenderFrame& frame, Vec3 position, float radius, Material materia
     addOpaque(frame, item);
 }
 
-void addBeam(RenderFrame& frame, Vec3 from, Vec3 to, float width, Vec3 color, float alpha) {
-    DrawItem item{};
-    item.mesh = MeshId::Box;
-    item.material = Material::Laser;
-    item.transform = beamTransform(from, to, width);
-    item.color = color;
-    item.alpha = alpha;
-    addAdditive(frame, item);
+void addBeam(RenderFrame& frame, Vec3 from, Vec3 to, float width, Vec3 color, float intensity,
+             int style = 0) {
+    cppgames::lasers::LaserBeam beam{};
+    beam.start[0] = from.x;
+    beam.start[1] = from.y;
+    beam.start[2] = from.z;
+    beam.end[0] = to.x;
+    beam.end[1] = to.y;
+    beam.end[2] = to.z;
+    beam.width = width;
+    beam.color[0] = color.x;
+    beam.color[1] = color.y;
+    beam.color[2] = color.z;
+    beam.intensity = intensity;
+    beam.style = style;
+    beam.seed = frame.time * 0.37f + from.x;
+    frame.lasers.push_back(beam);
 }
 
 void addPlayerLasers(RenderFrame& frame, const CameraBasis& basis, bool firing) {
@@ -84,8 +94,8 @@ void addPlayerLasers(RenderFrame& frame, const CameraBasis& basis, bool firing) 
     const Vec3 rightMuzzle =
         origin + basis.right * 0.85f + basis.up * -0.45f + basis.forward * 6.0f;
     const Vec3 target = origin + basis.forward * 90.0f;
-    addBeam(frame, leftMuzzle, target, 0.030f, {1.0f, 0.22f, 0.10f}, 0.85f);
-    addBeam(frame, rightMuzzle, target, 0.030f, {1.0f, 0.22f, 0.10f}, 0.85f);
+    addBeam(frame, leftMuzzle, target, 0.040f, {1.0f, 0.22f, 0.10f}, 1.0f, 0);
+    addBeam(frame, rightMuzzle, target, 0.040f, {1.0f, 0.22f, 0.10f}, 1.0f, 0);
 }
 
 void addTieFighters(RenderFrame& frame, float time, Vec3 around) {
@@ -151,7 +161,7 @@ void buildApproach(const BattleState& state, RenderFrame& frame) {
         const float boltTime = std::fmod(t * 1.25f + static_cast<float>(index) * 0.55f, 1.0f);
         const Vec3 from{18.0f + index * 5.0f, 10.0f - index * 6.0f, -75.0f - index * 20.0f};
         const Vec3 to = from + Vec3{-8.0f, -2.0f, 38.0f} * boltTime;
-        addBeam(frame, to, to + Vec3{-2.0f, -0.2f, 7.0f}, 0.07f, {0.4f, 1.0f, 0.35f}, 0.85f);
+        addBeam(frame, to, to + Vec3{-2.0f, -0.2f, 7.0f}, 0.07f, {0.4f, 1.0f, 0.35f}, 0.9f, 1);
     }
 
     frame.flash = std::max(0.0f, 1.0f - t * 5.0f) * 0.15f;
@@ -216,13 +226,13 @@ void buildTrench(const BattleState& state, RenderFrame& frame) {
         const float z = cameraZ - 18.0f - zig * 60.0f;
         const float side = (index % 2 == 0) ? -1.0f : 1.0f;
         addBeam(frame, {side * 4.6f, 1.0f, z}, {side * -4.6f, 1.0f, z - 16.0f}, 0.06f,
-                {1.0f, 0.25f, 0.15f}, 0.75f);
+                {1.0f, 0.25f, 0.15f}, 0.8f, 0);
     }
 
     // Torpedo shot in the final approach to the port.
     if (t > 9.6f) {
         addBeam(frame, eye + basis.up * -0.5f, eye + basis.forward * 65.0f, 0.2f,
-                {0.4f, 1.0f, 0.5f}, 1.0f);
+                {0.4f, 1.0f, 0.5f}, 1.0f, 2);
         frame.flash = std::max(frame.flash, (t - 9.6f) * 0.12f);
     }
     frame.flash = std::max(frame.flash, std::max(0.0f, 0.22f - t) * 3.5f);
@@ -290,7 +300,7 @@ void buildJump(const BattleState& state, RenderFrame& frame) {
         const Vec3 from = frame.camera.position + basis.right * (std::cos(angle) * radius) +
                           basis.up * (std::sin(angle) * radius) + basis.forward * 12.0f;
         addBeam(frame, from, from + basis.forward * (35.0f + random01(index) * 30.0f), 0.035f,
-                {0.55f, 0.82f, 1.0f}, 0.55f);
+                {0.55f, 0.82f, 1.0f}, 0.7f, 2);
     }
 }
 
@@ -348,7 +358,8 @@ void buildGauntlet(const BattleState& state, RenderFrame& frame) {
                         22.0f + std::sin(static_cast<float>(index) * 2.4f) * 6.0f,
                         cameraZ - 190.0f};
         const Vec3 to = from + normalize(eye - from) * (cycle * 140.0f);
-        addBeam(frame, to, to + normalize(eye - from) * 9.0f, 0.10f, {0.35f, 1.0f, 0.42f}, 0.9f);
+        addBeam(frame, to, to + normalize(eye - from) * 9.0f, 0.10f, {0.35f, 1.0f, 0.42f}, 0.95f,
+                1);
     }
 
     frame.flash = std::max(0.0f, 0.18f - t) * 2.0f;
@@ -359,6 +370,7 @@ void buildGauntlet(const BattleState& state, RenderFrame& frame) {
 void SceneBuilder::build(const BattleState& state, RenderFrame& frame) {
     frame.opaque.clear();
     frame.additive.clear();
+    frame.lasers.clear();
     frame.time = state.elapsedSeconds;
     frame.phaseTime = state.phaseTime;
     frame.phase = static_cast<int>(state.phase);

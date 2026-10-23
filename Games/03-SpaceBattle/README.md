@@ -103,7 +103,7 @@ All models live in one static `MeshBatch` and are drawn with the same pipeline.
 | TIE fighter | Enemy fighters | Sphere cockpit, hex wings, and twin struts generated from primitives. |
 | Star Destroyer | Gauntlet backdrop | Triangular wedge hull plus bridge tower, shield domes, and engine banks. |
 | Trench | Trench run | Long floor/walls made from box sections, ribs, and edge towers. |
-| Box | Exhaust port, towers, laser bolts, debris | Unit cube transformed per draw. |
+| Box | Exhaust port, towers, debris | Unit cube transformed per draw. |
 
 The X-Wing itself is not a mesh: the cockpit is a screen-space shader overlay.
 That is a deliberate tradeoff: it gives a convincing first-person frame and HUD
@@ -135,6 +135,8 @@ SpaceBattle fills a `CockpitState` and calls `CockpitOverlay::encode` at the end
 of its render pass. The same module powers the
 [cockpit lab](<Prototypes/X-Wing Cockpit/README.md>), where the visuals can
 be iterated in isolation and then land in the game without copy/paste.
+Laser visuals live in [Engine/Lasers](../../Engine/Lasers/README.md) and are
+iterated in the [laser lab](<Prototypes/X-Wing Lasers/README.md>).
 
 The Slang compiler emits Metal Shading Language at build time. The app compiles
 the generated `.metal` source at runtime, so development works with only the
@@ -154,7 +156,6 @@ build; shader-only edits do not require a relink.
 | `Tie` | Dark armor with a green cockpit bloom. |
 | `StarDestroyer` | Panel detail and procedural window lights. |
 | `Sky` | Three star layers, twinkle, nebula, and galactic band. |
-| `Laser` | Additive hot core. |
 | `Explosion` | Turbulent fireball shells and debris. |
 
 ## Which parts are CPU and which are GPU
@@ -165,7 +166,7 @@ build; shader-only edits do not require a relink.
 | Camera paths and lateral steering | Lighting and material branching |
 | Building the draw list and object transforms | Procedural planet/Death Star/trench/sky surfaces |
 | Allocating and uploading mesh/uniform buffers | Antialiased cockpit SDFs and HUD composition |
-| Metal draw submission and depth/pipeline state | Additive blending for lasers and explosions |
+| Metal draw submission and depth/pipeline state | Laser glow, additive blending for explosions |
 | SDL windowing, input, and fixed timestep | No mesh animation or skinning; every model is rigid |
 
 ## Source guide
@@ -177,7 +178,8 @@ build; shader-only edits do not require a relink.
 ├── run.sh
 ├── Docs/screenshot.png
 ├── Prototypes/
-│   └── X-Wing Cockpit/      # standalone cockpit lab, same shared module
+│   ├── X-Wing Cockpit/      # standalone cockpit lab, same shared module
+│   └── X-Wing Lasers/       # standalone laser lab, same shared module
 ├── Shaders/
 │   └── scene.slang          # 3D world, procedural materials, sky
 ├── ThirdParty/
@@ -221,7 +223,7 @@ Engine/Cockpit/
   object.
 - No texture sampling: procedural shader work trades bandwidth for ALU.
 - Opaque objects are depth-tested; additive effects do not write depth; the
-  cockpit is a single fullscreen triangle.
+  laser and cockpit passes are single fullscreen triangles.
 - No skybox cubemap: a procedural sphere renders the stars.
 - The demo is intentionally scripted. There are no collision/win/loss systems,
   so it can loop forever without player input.

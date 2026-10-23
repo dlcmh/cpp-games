@@ -50,23 +50,31 @@ add_subdirectory(
     "${CMAKE_CURRENT_SOURCE_DIR}/../../Engine/Cockpit"
     "${CMAKE_BINARY_DIR}/engine-cockpit"
 )
+add_subdirectory(
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../Engine/Lasers"
+    "${CMAKE_BINARY_DIR}/engine-lasers"
+)
 
 set(SCENE_METAL "${CMAKE_BINARY_DIR}/generated/scene.metal")
 set(COCKPIT_METAL "${CMAKE_BINARY_DIR}/generated/cockpit.metal")
+set(LASER_METAL "${CMAKE_BINARY_DIR}/generated/laser.metal")
 add_custom_command(
-    OUTPUT "${SCENE_METAL}" "${COCKPIT_METAL}"
+    OUTPUT "${SCENE_METAL}" "${COCKPIT_METAL}" "${LASER_METAL}"
     COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/generated"
     COMMAND "${SLANGC}" "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/scene.slang"
             -target metal -entry vertexMain -entry fragmentMain -o "${SCENE_METAL}"
     COMMAND "${SLANGC}" "${CPPGAMES_COCKPIT_SHADER}"
             -target metal -entry vertexMain -entry fragmentMain -o "${COCKPIT_METAL}"
+    COMMAND "${SLANGC}" "${CPPGAMES_LASER_SHADER}"
+            -target metal -entry vertexMain -entry fragmentMain -o "${LASER_METAL}"
     DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/scene.slang"
         "${CPPGAMES_COCKPIT_SHADER}"
+        "${CPPGAMES_LASER_SHADER}"
     COMMENT "Compiling Space Battle shaders to Metal"
     VERBATIM
 )
-add_custom_target(SpaceBattleShaders DEPENDS "${SCENE_METAL}" "${COCKPIT_METAL}")
+add_custom_target(SpaceBattleShaders DEPENDS "${SCENE_METAL}" "${COCKPIT_METAL}" "${LASER_METAL}")
 
 add_executable(SpaceBattle
     Sources/App/Main.cpp
@@ -88,6 +96,7 @@ target_link_libraries(SpaceBattle PRIVATE
     SDL3
     metal-cpp
     cppgames_cockpit
+    cppgames_lasers
     "${METAL_FRAMEWORK}"
     "${QUARTZCORE_FRAMEWORK}"
     "${FOUNDATION_FRAMEWORK}"
@@ -104,7 +113,10 @@ add_custom_target(SpaceBattleResources ALL
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${COCKPIT_METAL}"
             "$<TARGET_BUNDLE_DIR:SpaceBattle>/Contents/Resources/shaders/cockpit.metal"
-    DEPENDS "${SCENE_METAL}" "${COCKPIT_METAL}"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${LASER_METAL}"
+            "$<TARGET_BUNDLE_DIR:SpaceBattle>/Contents/Resources/shaders/laser.metal"
+    DEPENDS "${SCENE_METAL}" "${COCKPIT_METAL}" "${LASER_METAL}"
     COMMENT "Bundling Space Battle shaders"
     VERBATIM
 )

@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "Lasers/LaserTypes.hpp"
 #include "Render/Math.hpp"
 #include "Render/MeshId.hpp"
 
@@ -36,6 +37,7 @@ struct RenderFrame {
     int pixelHeight{0};
     std::vector<DrawItem> opaque;
     std::vector<DrawItem> additive;
+    std::vector<cppgames::lasers::LaserBeam> lasers;
 };
 
 }  // namespace spacebattle

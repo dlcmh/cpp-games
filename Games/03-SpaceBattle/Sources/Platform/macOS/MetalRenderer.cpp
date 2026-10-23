@@ -2,6 +2,8 @@
 
 #include "Cockpit/CockpitOverlay.hpp"
 #include "Cockpit/CockpitState.hpp"
+#include "Lasers/LaserRenderer.hpp"
+#include "Lasers/LaserTypes.hpp"
 #include "Platform/macOS/MeshLibrary.hpp"
 #include "Platform/macOS/Pipelines.hpp"
 #include "Platform/macOS/SceneUniforms.hpp"
@@ -14,6 +16,7 @@
 #include <Metal/Metal.hpp>
 #include <QuartzCore/QuartzCore.hpp>
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -46,6 +49,7 @@ private:
     std::array<MeshRange, static_cast<std::size_t>(MeshId::Count)> meshRanges_{};
     Pipelines pipelines_;
     cppgames::cockpit::CockpitOverlay cockpit_;
+    cppgames::lasers::LaserRenderer lasers_;
     CA::MetalLayer* layer_{nullptr};
     int pixelWidth_{0};
     int pixelHeight_{0};
@@ -90,6 +94,10 @@ bool MetalRenderer::initialize(const NativeSurface& surface, const std::string& 
     }
 
     if (!cockpit_.build(device_.get(), shaderDirectory + "/cockpit.metal", true, error)) {
+        pool->release();
+        return false;
+    }
+    if (!lasers_.build(device_.get(), shaderDirectory + "/laser.metal", true, error)) {
         pool->release();
         return false;
     }
@@ -251,6 +259,21 @@ bool MetalRenderer::draw(const RenderFrame& frame, std::string& error) {
     encoder->setVertexBytes(&frameUniforms, sizeof(frameUniforms), 0);
     encoder->setFragmentBytes(&frameUniforms, sizeof(frameUniforms), 0);
     encodeItems(frame.additive);
+
+    // Shared additive laser renderer.
+    cppgames::lasers::LaserFrame laserFrame{};
+    const Mat4 viewProjection = projection * view;
+    for (int index = 0; index < 16; ++index) {
+        laserFrame.viewProjection[index] = viewProjection.m[index];
+    }
+    laserFrame.cameraPosition[0] = frame.camera.position.x;
+    laserFrame.cameraPosition[1] = frame.camera.position.y;
+    laserFrame.cameraPosition[2] = frame.camera.position.z;
+    laserFrame.time = frame.time;
+    laserFrame.projectionScale = projection.m[5];
+    laserFrame.aspect =
+        static_cast<float>(pixelWidth_) / static_cast<float>(std::max(pixelHeight_, 1));
+    lasers_.encode(encoder, laserFrame, frame.lasers);
 
     // Screen-space cockpit overlay from the shared engine module.
     cppgames::cockpit::CockpitState cockpitState{};
