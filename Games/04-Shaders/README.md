@@ -19,6 +19,7 @@ The app is written to `/tmp/cpp-games-shaders-build/Shaders.app`.
 | --- | --- | --- |
 | 1 | `Shaders/1.slang` | A fullscreen triangle and a centred rectangle outline. |
 | 2 | `Shaders/2.slang` | The same rectangle filled with a flat colour. |
+| 3 | `Shaders/3.slang` | The rectangle outline replaced by a circle outline. |
 
 Both shaders use a shared `Uniforms` struct containing the pixel resolution and
 time. The C++ side compiles the Slang shader to Metal at build time, then loads
