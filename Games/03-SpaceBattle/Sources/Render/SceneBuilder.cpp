@@ -176,11 +176,19 @@ void buildApproach(const BattleState& state, RenderFrame& frame) {
     const float t = state.phaseTime;
     const Vec3 deathStar{20.0f + std::sin(state.elapsedSeconds * 0.08f) * 5.0f,
                          8.0f + std::cos(state.elapsedSeconds * 0.11f) * 2.0f, -170.0f};
-    const Vec3 eye{state.steer * 8.0f + std::sin(t * 0.5f) * 1.5f,
-                   3.2f + std::sin(t * 0.7f) * 0.35f, 0.0f};
+    const Vec3 orbitEye{state.steer * 8.0f + std::sin(t * 0.5f) * 1.5f,
+                        3.2f + std::sin(t * 0.7f) * 0.35f, 0.0f};
+
+    // Hold the orbit composition for the first few seconds, then dive at the
+    // surface. The trench phase picks up the same descent.
+    const float diveT = std::clamp((t - 4.3f) / 2.7f, 0.0f, 1.0f);
+    const float dive = diveT * diveT * (3.0f - 2.0f * diveT);
+    const Vec3 surfaceEye = deathStar + Vec3{0.0f, -10.0f, 30.0f};
+    const Vec3 eye = orbitEye + (surfaceEye - orbitEye) * dive;
     const Vec3 target = deathStar + Vec3{0.0f, -2.0f, 0.0f};
 
     setCamera(frame, eye, target, {0.0f, 1.0f, 0.0f});
+    frame.flash = std::max(frame.flash, std::clamp((t - 6.5f) / 0.4f, 0.0f, 1.0f) * 0.8f);
     addSky(frame);
     addPlanet(frame, {-95.0f, -70.0f, -330.0f}, 112.0f,
               state.elapsedSeconds * frame.planetSpec.spinSpeed);
@@ -205,8 +213,11 @@ void buildApproach(const BattleState& state, RenderFrame& frame) {
 void buildTrench(const BattleState& state, RenderFrame& frame) {
     const float t = state.phaseTime;
     const float cameraZ = 20.0f - t * 40.0f;
-    const Vec3 eye{state.steer * 1.9f + std::sin(t * 0.9f) * 0.55f,
-                   0.25f + std::sin(t * 1.2f) * 0.08f, cameraZ};
+    Vec3 eye{state.steer * 1.9f + std::sin(t * 0.9f) * 0.55f, 0.25f + std::sin(t * 1.2f) * 0.08f,
+             cameraZ};
+    const float settleT = std::clamp(t / 1.2f, 0.0f, 1.0f);
+    const float settle = settleT * settleT * (3.0f - 2.0f * settleT);
+    eye.y = 7.5f + (0.25f - 7.5f) * settle;
     const float aspect = frame.pixelHeight > 0 ? static_cast<float>(frame.pixelWidth) /
                                                      static_cast<float>(frame.pixelHeight)
                                                : 1.777f;
