@@ -1,5 +1,4 @@
-#ifndef CPPGAMES_ROTATABLES_SKINS_SLANG
-#define CPPGAMES_ROTATABLES_SKINS_SLANG
+#pragma once
 
 #include "common.slang"
 
@@ -107,5 +106,3 @@ float3 skinEdge(int skin, float2 p, float distance, float time)
     return halo * iridescent * shimmer * 0.70 +
            nearEdge * sparkle * float3(1.0, 1.0, 0.9) * 0.8;
 }
-
-#endif  // CPPGAMES_ROTATABLES_SKINS_SLANG

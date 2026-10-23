@@ -1,5 +1,4 @@
-#ifndef CPPGAMES_ROTATABLES_COMMON_SLANG
-#define CPPGAMES_ROTATABLES_COMMON_SLANG
+#pragma once
 
 // Shared uniforms, procedural noise, glyph distance fields, and palette
 // helpers. Keep SceneUniforms in sync with SceneUniforms.hpp.
@@ -105,5 +104,3 @@ float3 accentColor(int skin)
     }
     return float3(1.00, 0.40, 0.78);
 }
-
-#endif  // CPPGAMES_ROTATABLES_COMMON_SLANG
