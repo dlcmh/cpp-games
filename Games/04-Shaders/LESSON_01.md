@@ -25,6 +25,20 @@ We only draw three vertices. There is no rectangle or circle mesh anywhere.
 Those three vertices are deliberately placed so the triangle covers the entire
 window. Your shape is created later, one pixel at a time, in the fragment shader.
 
+### The triangle is not the shape you see
+
+The C++ draw call submits one triangle:
+
+```cpp
+encoder->drawPrimitives(MTL::PrimitiveTypeTriangle, 0, 3);
+```
+
+That triangle is deliberately much bigger than the window, so every visible
+pixel is covered. You do not see a triangular shape because the fragment shader
+makes most of it transparent. The rectangle and circle are **pixel masks**, not
+geometry: the fragment shader returns a colour and opacity for each pixel, and
+only the pixels on the outline get alpha `1`.
+
 Think of it like painting a wall:
 
 - The vertex shader hangs a huge blank canvas.
@@ -38,10 +52,12 @@ The vertex shader gives each pixel a coordinate:
 output.uv = corner;
 ```
 
-`uv` runs from `0` to `1` across the window:
+`uv` runs from `0` to `1` across the visible window:
 
 - `(0, 0)` is one corner
 - `(1, 1)` is the opposite corner
+
+The triangle is clipped to the window, so the parts outside it do not matter.
 
 The fragment shader turns that into a more useful coordinate system:
 
