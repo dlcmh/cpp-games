@@ -1,3 +1,8 @@
+#ifndef CPPGAMES_ROTATABLES_SKINS_SLANG
+#define CPPGAMES_ROTATABLES_SKINS_SLANG
+
+#include "common.slang"
+
 // Five procedural skins. Each skin supplies one fill treatment and one edge
 // treatment; the scene shader composes them with the glyph distance field.
 
@@ -102,3 +107,5 @@ float3 skinEdge(int skin, float2 p, float distance, float time)
     return halo * iridescent * shimmer * 0.70 +
            nearEdge * sparkle * float3(1.0, 1.0, 0.9) * 0.8;
 }
+
+#endif  // CPPGAMES_ROTATABLES_SKINS_SLANG
