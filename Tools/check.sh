@@ -98,12 +98,15 @@ is_build_input() {
 }
 
 PROJECTS=()
-while IFS= read -r cmake_file; do
-    [[ -n "${cmake_file}" ]] && PROJECTS+=("$(dirname "${cmake_file}")")
-done < <(find "${ROOT}/Games" -mindepth 2 -maxdepth 2 -name CMakeLists.txt -print | sort)
+for project_root in Games Prototypes; do
+    [[ -d "${ROOT}/${project_root}" ]] || continue
+    while IFS= read -r cmake_file; do
+        [[ -n "${cmake_file}" ]] && PROJECTS+=("$(dirname "${cmake_file}")")
+    done < <(find "${ROOT}/${project_root}" -mindepth 2 -maxdepth 2 -name CMakeLists.txt -print | sort)
+done
 
 if [[ "${#PROJECTS[@]}" -eq 0 ]]; then
-    echo "[check] No games with CMakeLists.txt found."
+    echo "[check] No game or prototype projects found."
     exit 0
 fi
 
@@ -111,20 +114,38 @@ CANDIDATES=()
 if [[ "${MODE}" == "staged" ]]; then
     while IFS= read -r path; do
         [[ -n "${path}" ]] && CANDIDATES+=("${path}")
-    done < <(git -C "${ROOT}" diff --cached --name-only --diff-filter=ACMR -- Games)
+    done < <(git -C "${ROOT}" diff --cached --name-only --diff-filter=ACMR -- Games Prototypes Engine)
 else
     while IFS= read -r path; do
         [[ -n "${path}" ]] && CANDIDATES+=("${path}")
-    done < <(git -C "${ROOT}" ls-files -- Games)
+    done < <(git -C "${ROOT}" ls-files -- Games Prototypes Engine)
 fi
 
 CXX_FILES=()
 TIDY_FILES=()
 BUILD_PROJECTS=()
+ENGINE_CHANGED=0
+ENGINE_PROJECT="${PROJECTS[0]}"
+
+for project in "${PROJECTS[@]}"; do
+    case "${project}" in
+        */Games/03-SpaceBattle) ENGINE_PROJECT="${project}" ;;
+    esac
+done
+
+for relative in "${CANDIDATES[@]}"; do
+    case "${relative}" in
+        Engine/*) ENGINE_CHANGED=1 ;;
+    esac
+done
 
 if [[ "${MODE}" == "all" ]]; then
     BUILD_PROJECTS=("${PROJECTS[@]}")
 else
+    if [[ "${ENGINE_CHANGED}" -eq 1 ]]; then
+        # Shared modules affect every consumer; rebuild all discoverable apps.
+        BUILD_PROJECTS=("${PROJECTS[@]}")
+    else
     for project in "${PROJECTS[@]}"; do
         project_relative="${project#"${ROOT}/"}"
         project_needs_build=0
@@ -144,6 +165,7 @@ else
             BUILD_PROJECTS+=("${project}")
         fi
     done
+    fi
 fi
 
 if [[ "${MODE}" == "staged" ]] && [[ "${#BUILD_PROJECTS[@]}" -eq 0 ]]; then
@@ -179,6 +201,20 @@ project_build_dir() {
     printf '%s/%s\n' "${CHECK_ROOT}" "$(basename "$1")"
 }
 
+file_belongs_to_project() {
+    local file="$1"
+    local project="$2"
+    case "${file}" in
+        "${project}"/*) return 0 ;;
+    esac
+    if [[ "${project}" == "${ENGINE_PROJECT}" ]]; then
+        case "${file}" in
+            "${ROOT}/Engine"/*) return 0 ;;
+        esac
+    fi
+    return 1
+}
+
 build_project() {
     local project="$1"
     local build_dir
@@ -194,7 +230,7 @@ build_project() {
     cmake --build "${build_dir}" --parallel
 }
 
-echo "[check] Building ${#BUILD_PROJECTS[@]} game(s) with warnings as errors..."
+echo "[check] Building ${#BUILD_PROJECTS[@]} project(s) with warnings as errors..."
 for project in "${BUILD_PROJECTS[@]}"; do
     build_project "${project}"
 done
@@ -213,15 +249,13 @@ if [[ "${FIX}" -eq 1 ]]; then
         for project in "${BUILD_PROJECTS[@]}"; do
             build_dir="$(project_build_dir "${project}")"
             for file in "${TIDY_FILES[@]}"; do
-                case "${file}" in
-                    "${project}"/*)
-                        "${TIDY_BIN}" -p "${build_dir}" "${file}" \
-                            --config-file="${ROOT}/.clang-tidy" \
-                            --header-filter='^$' \
-                            --fix \
-                            --quiet
-                        ;;
-                esac
+                if file_belongs_to_project "${file}" "${project}"; then
+                    "${TIDY_BIN}" -p "${build_dir}" "${file}" \
+                        --config-file="${ROOT}/.clang-tidy" \
+                        --header-filter='^$' \
+                        --fix \
+                        --quiet
+                fi
             done
         done
     fi
@@ -250,15 +284,13 @@ if [[ "${#TIDY_FILES[@]}" -gt 0 ]]; then
     for project in "${BUILD_PROJECTS[@]}"; do
         build_dir="$(project_build_dir "${project}")"
         for file in "${TIDY_FILES[@]}"; do
-            case "${file}" in
-                "${project}"/*)
-                    "${TIDY_BIN}" -p "${build_dir}" "${file}" \
-                        --config-file="${ROOT}/.clang-tidy" \
-                        --header-filter='^$' \
-                        --warnings-as-errors='*' \
-                        --quiet
-                    ;;
-            esac
+            if file_belongs_to_project "${file}" "${project}"; then
+                "${TIDY_BIN}" -p "${build_dir}" "${file}" \
+                    --config-file="${ROOT}/.clang-tidy" \
+                    --header-filter='^$' \
+                    --warnings-as-errors='*' \
+                    --quiet
+            fi
         done
     done
 fi

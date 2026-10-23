@@ -16,10 +16,17 @@ Specifications:
 - [03-SpaceBattle](Games/03-SpaceBattle/README.md) — a procedural 3D X-Wing
   trench-run demo with Death Star destruction, hyperspace, and a gauntlet.
 
+## Prototypes
+
+- [01-XWingCockpit](Prototypes/01-XWingCockpit/README.md) — an interactive lab
+  for evaluating the shared X-Wing cockpit overlay used by SpaceBattle.
+- Shared cockpit module: [Engine/Cockpit](Engine/Cockpit/README.md).
+
 ## Development
 
 Commits run tracked local checks from `.githooks/pre-commit`: formatting,
-include cleanup, and a warnings-as-errors build. Any game's `run.sh`
-installs the hook automatically, or run `Tools/install-hooks.sh` directly.
+include cleanup, and a warnings-as-errors build across games, prototypes, and
+shared engine modules. Any project's `run.sh` installs the hook automatically,
+or run `Tools/install-hooks.sh` directly.
 Manual check and fix commands are documented in the
 [Barebones README](Games/01-Barebones/README.md#local-checks-and-auto-fixes).

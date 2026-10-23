@@ -105,34 +105,6 @@ MTL::RenderPipelineState* makeScenePipeline(MTL::Device* device, MTL::Function* 
     return pipeline;
 }
 
-MTL::RenderPipelineState* makeCockpitPipeline(MTL::Device* device, MTL::Function* vertex,
-                                              MTL::Function* fragment, std::string& error) {
-    MTL::RenderPipelineDescriptor* descriptor = MTL::RenderPipelineDescriptor::alloc()->init();
-    descriptor->setLabel(makeString("SpaceBattle Cockpit"));
-    descriptor->setVertexFunction(vertex);
-    descriptor->setFragmentFunction(fragment);
-    descriptor->setDepthAttachmentPixelFormat(MTL::PixelFormatDepth32Float);
-    MTL::RenderPipelineColorAttachmentDescriptor* attachment =
-        descriptor->colorAttachments()->object(0);
-    attachment->setPixelFormat(MTL::PixelFormatBGRA8Unorm);
-    attachment->setBlendingEnabled(true);
-    attachment->setSourceRGBBlendFactor(MTL::BlendFactorSourceAlpha);
-    attachment->setDestinationRGBBlendFactor(MTL::BlendFactorOneMinusSourceAlpha);
-    attachment->setRgbBlendOperation(MTL::BlendOperationAdd);
-    attachment->setSourceAlphaBlendFactor(MTL::BlendFactorOne);
-    attachment->setDestinationAlphaBlendFactor(MTL::BlendFactorOneMinusSourceAlpha);
-    attachment->setAlphaBlendOperation(MTL::BlendOperationAdd);
-
-    NS::Error* metalError = nullptr;
-    MTL::RenderPipelineState* pipeline = device->newRenderPipelineState(descriptor, &metalError);
-    if (pipeline == nullptr) {
-        error = "Could not create cockpit pipeline: " + describeError(metalError);
-    }
-
-    descriptor->release();
-    return pipeline;
-}
-
 }  // namespace
 
 bool Pipelines::build(MTL::Device* device, const std::string& shaderDirectory, std::string& error) {
@@ -169,34 +141,10 @@ bool Pipelines::build(MTL::Device* device, const std::string& shaderDirectory, s
     opaque_ = NS::TransferPtr(opaquePipeline);
     additive_ = NS::TransferPtr(additivePipeline);
 
-    MTL::Library* cockpitLibrary =
-        compileLibrary(device, shaderDirectory + "/cockpit.metal", error);
-    if (cockpitLibrary == nullptr) {
-        return false;
-    }
-    MTL::Function* cockpitVertex = cockpitLibrary->newFunction(makeString("vertexMain"));
-    MTL::Function* cockpitFragment = cockpitLibrary->newFunction(makeString("fragmentMain"));
-    if (cockpitVertex == nullptr || cockpitFragment == nullptr) {
-        error = "cockpit.metal is missing vertexMain or fragmentMain";
-        cockpitLibrary->release();
-        return false;
-    }
-    MTL::RenderPipelineState* cockpitPipeline =
-        makeCockpitPipeline(device, cockpitVertex, cockpitFragment, error);
-    cockpitVertex->release();
-    cockpitFragment->release();
-    cockpitLibrary->release();
-    if (cockpitPipeline == nullptr) {
-        return false;
-    }
-    cockpit_ = NS::TransferPtr(cockpitPipeline);
-
     sceneDepth_ = NS::TransferPtr(makeDepthState(device, MTL::CompareFunctionLess, true));
     effectDepth_ = NS::TransferPtr(makeDepthState(device, MTL::CompareFunctionLess, false));
-    overlayDepth_ = NS::TransferPtr(makeDepthState(device, MTL::CompareFunctionAlways, false));
 
-    return sceneDepth_.get() != nullptr && effectDepth_.get() != nullptr &&
-           overlayDepth_.get() != nullptr;
+    return sceneDepth_.get() != nullptr && effectDepth_.get() != nullptr;
 }
 
 MTL::RenderPipelineState* Pipelines::opaque() const {
@@ -207,20 +155,12 @@ MTL::RenderPipelineState* Pipelines::additive() const {
     return additive_.get();
 }
 
-MTL::RenderPipelineState* Pipelines::cockpit() const {
-    return cockpit_.get();
-}
-
 MTL::DepthStencilState* Pipelines::sceneDepth() const {
     return sceneDepth_.get();
 }
 
 MTL::DepthStencilState* Pipelines::effectDepth() const {
     return effectDepth_.get();
-}
-
-MTL::DepthStencilState* Pipelines::overlayDepth() const {
-    return overlayDepth_.get();
 }
 
 }  // namespace spacebattle

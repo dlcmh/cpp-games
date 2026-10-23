@@ -1,5 +1,7 @@
 #include "Platform/macOS/MetalRenderer.hpp"
 
+#include "Cockpit/CockpitOverlay.hpp"
+#include "Cockpit/CockpitState.hpp"
 #include "Platform/macOS/MeshLibrary.hpp"
 #include "Platform/macOS/Pipelines.hpp"
 #include "Platform/macOS/SceneUniforms.hpp"
@@ -11,8 +13,6 @@
 #include <Foundation/Foundation.hpp>
 #include <Metal/Metal.hpp>
 #include <QuartzCore/QuartzCore.hpp>
-
-#include <CoreGraphics/CoreGraphics.h>
 
 #include <array>
 #include <cstddef>
@@ -45,6 +45,7 @@ private:
     NS::SharedPtr<MTL::Texture> depthTexture_;
     std::array<MeshRange, static_cast<std::size_t>(MeshId::Count)> meshRanges_{};
     Pipelines pipelines_;
+    cppgames::cockpit::CockpitOverlay cockpit_;
     CA::MetalLayer* layer_{nullptr};
     int pixelWidth_{0};
     int pixelHeight_{0};
@@ -84,6 +85,11 @@ bool MetalRenderer::initialize(const NativeSurface& surface, const std::string& 
     resize(surface.pixelWidth, surface.pixelHeight);
 
     if (!createBuffers(error) || !pipelines_.build(device_.get(), shaderDirectory, error)) {
+        pool->release();
+        return false;
+    }
+
+    if (!cockpit_.build(device_.get(), shaderDirectory + "/cockpit.metal", true, error)) {
         pool->release();
         return false;
     }
@@ -193,17 +199,6 @@ bool MetalRenderer::draw(const RenderFrame& frame, std::string& error) {
     frameUniforms.timing[2] = frame.phaseTime;
     frameUniforms.timing[3] = frame.jump;
 
-    CockpitUniforms cockpitUniforms{};
-    cockpitUniforms.resolution[0] = static_cast<float>(pixelWidth_);
-    cockpitUniforms.resolution[1] = static_cast<float>(pixelHeight_);
-    cockpitUniforms.time = frame.time;
-    cockpitUniforms.phase = static_cast<float>(frame.phase);
-    cockpitUniforms.phaseTime = frame.phaseTime;
-    cockpitUniforms.flash = frame.flash;
-    cockpitUniforms.jump = frame.jump;
-    cockpitUniforms.steer = frame.steer;
-    cockpitUniforms.firing = frame.firing;
-
     MTL::CommandBuffer* commandBuffer = commandQueue_->commandBuffer();
     if (commandBuffer == nullptr) {
         pass->release();
@@ -257,12 +252,16 @@ bool MetalRenderer::draw(const RenderFrame& frame, std::string& error) {
     encoder->setFragmentBytes(&frameUniforms, sizeof(frameUniforms), 0);
     encodeItems(frame.additive);
 
-    // Screen-space cockpit overlay.
-    encoder->setRenderPipelineState(pipelines_.cockpit());
-    encoder->setDepthStencilState(pipelines_.overlayDepth());
-    encoder->setFragmentBytes(&cockpitUniforms, sizeof(cockpitUniforms), 0);
-    encoder->drawPrimitives(MTL::PrimitiveTypeTriangle, static_cast<NS::UInteger>(0),
-                            static_cast<NS::UInteger>(3));
+    // Screen-space cockpit overlay from the shared engine module.
+    cppgames::cockpit::CockpitState cockpitState{};
+    cockpitState.time = frame.time;
+    cockpitState.phase = static_cast<float>(frame.phase);
+    cockpitState.phaseTime = frame.phaseTime;
+    cockpitState.flash = frame.flash;
+    cockpitState.jump = frame.jump;
+    cockpitState.steer = frame.steer;
+    cockpitState.firing = frame.firing;
+    cockpit_.encode(encoder, cockpitState, pixelWidth_, pixelHeight_);
 
     encoder->endEncoding();
     commandBuffer->presentDrawable(drawable);

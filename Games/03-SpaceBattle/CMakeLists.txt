@@ -44,6 +44,12 @@ find_library(METAL_FRAMEWORK Metal REQUIRED)
 find_library(QUARTZCORE_FRAMEWORK QuartzCore REQUIRED)
 find_library(FOUNDATION_FRAMEWORK Foundation REQUIRED)
 
+# Shared engine module also consumed by Prototypes/01-XWingCockpit.
+add_subdirectory(
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../Engine/Cockpit"
+    "${CMAKE_BINARY_DIR}/engine-cockpit"
+)
+
 set(SCENE_METAL "${CMAKE_BINARY_DIR}/generated/scene.metal")
 set(COCKPIT_METAL "${CMAKE_BINARY_DIR}/generated/cockpit.metal")
 add_custom_command(
@@ -51,11 +57,11 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/generated"
     COMMAND "${SLANGC}" "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/scene.slang"
             -target metal -entry vertexMain -entry fragmentMain -o "${SCENE_METAL}"
-    COMMAND "${SLANGC}" "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/cockpit.slang"
+    COMMAND "${SLANGC}" "${CPPGAMES_COCKPIT_SHADER}"
             -target metal -entry vertexMain -entry fragmentMain -o "${COCKPIT_METAL}"
     DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/scene.slang"
-        "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/cockpit.slang"
+        "${CPPGAMES_COCKPIT_SHADER}"
     COMMENT "Compiling Space Battle shaders to Metal"
     VERBATIM
 )
@@ -80,6 +86,7 @@ endif()
 target_link_libraries(SpaceBattle PRIVATE
     SDL3
     metal-cpp
+    cppgames_cockpit
     "${METAL_FRAMEWORK}"
     "${QUARTZCORE_FRAMEWORK}"
     "${FOUNDATION_FRAMEWORK}"

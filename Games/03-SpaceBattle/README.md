@@ -83,8 +83,8 @@ The frame uses a single render pass with a color target and a depth texture:
    drawn first.
 2. **Additive effects** — laser bolts and explosion shells are drawn with
    depth testing but no depth writes and additive blending.
-3. **Cockpit overlay** — a fullscreen shader draws the canopy, HUD, hyperspace
-   streaks, and flash with normal alpha blending.
+3. **Cockpit overlay** — the shared `Engine/Cockpit` module draws the canopy,
+   HUD, hyperspace streaks, and flash with normal alpha blending.
 
 There are no offscreen render targets or post-processing passes. This keeps
 the workload TBDR-friendly on Apple GPUs: geometry is submitted once, opaque
@@ -127,10 +127,14 @@ fragment shaders:
   panels/dish/trench, asteroid grain, TIE glows, Star Destroyer windows, laser
   cores, and noisy explosion fire.
 
-[`Shaders/cockpit.slang`](Shaders/cockpit.slang) is a fullscreen fragment
-shader. SDFs draw the canopy struts, dashboard, instrument panels, reticle,
-target bracket, and status lights. It also layers in hyperspace
-streaks and the explosion flash.
+The cockpit is a shared engine module, not a game-local shader. Its source is
+[`Engine/Cockpit/Shaders/cockpit.slang`](../../Engine/Cockpit/Shaders/cockpit.slang),
+and its platform renderer is
+[`Engine/Cockpit/Include/Cockpit/CockpitOverlay.hpp`](../../Engine/Cockpit/Include/Cockpit/CockpitOverlay.hpp).
+SpaceBattle fills a `CockpitState` and calls `CockpitOverlay::encode` at the end
+of its render pass. The same module powers the
+[cockpit lab](../../Prototypes/01-XWingCockpit/README.md), where the visuals can
+be iterated in isolation and then land in the game without copy/paste.
 
 The Slang compiler emits Metal Shading Language at build time. The app compiles
 the generated `.metal` source at runtime, so development works with only the
@@ -173,8 +177,7 @@ build; shader-only edits do not require a relink.
 ├── run.sh
 ├── Docs/screenshot.png
 ├── Shaders/
-│   ├── scene.slang          # 3D world, procedural materials, sky
-│   └── cockpit.slang        # fullscreen cockpit/HUD overlay
+│   └── scene.slang          # 3D world, procedural materials, sky
 ├── ThirdParty/
 │   └── fetch-dependencies.sh
 └── Sources/
@@ -195,6 +198,18 @@ build; shader-only edits do not require a relink.
         ├── MetalRenderer.cpp/.hpp
         ├── Pipelines.cpp/.hpp
         └── SceneUniforms.hpp
+```
+
+The reusable cockpit lives outside the game:
+
+```text
+Engine/Cockpit/
+├── CMakeLists.txt
+├── Include/Cockpit/
+│   ├── CockpitOverlay.hpp   # Metal pipeline + encode API
+│   └── CockpitState.hpp     # renderer-neutral state contract
+├── Sources/CockpitOverlay.cpp
+└── Shaders/cockpit.slang
 ```
 
 ## Rendering and performance notes

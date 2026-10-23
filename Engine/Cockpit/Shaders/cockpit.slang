@@ -10,7 +10,12 @@ struct CockpitUniforms {
     float jump;
     float steer;
     float firing;
-    float3 padding;
+    float showCanopy;
+    float showDashboard;
+    float showHud;
+    float glassTint;
+    float hudScale;
+    float2 padding;
 };
 
 [[vk::binding(0, 0)]]
@@ -99,9 +104,10 @@ float4 fragmentMain(VSOutput input) : SV_Target
     const float3 frameEdge = float3(0.10, 0.13, 0.16);
     const float3 accent = hudAccent();
 
+    if (cockpit.showCanopy > 0.5) {
     // Canopy glass tint and subtle dust/scratches.
     const float canopy = smoothstep(0.55, 1.15, abs(p.x) * 0.6 + abs(p.y) * 0.9);
-    layer(rgb, alpha, float3(0.012, 0.028, 0.042), canopy * 0.10);
+    layer(rgb, alpha, float3(0.012, 0.028, 0.042), canopy * cockpit.glassTint);
 
     // Upper diagonal canopy struts.
     layer(rgb, alpha, frameColor,
@@ -124,7 +130,9 @@ float4 fragmentMain(VSOutput input) : SV_Target
     const float rightPillar = sdSegment(p, float2(aspect * 0.88, 0.84), float2(aspect * 0.95, 0.18));
     layer(rgb, alpha, frameColor, lineMask(leftPillar, 0.022));
     layer(rgb, alpha, frameColor, lineMask(rightPillar, 0.022));
+    }
 
+    if (cockpit.showDashboard > 0.5) {
     // Dashboard silhouette: a low, angular instrument binnacle.
     const float dashEdge = -0.64 + 0.10 * abs(p.x) + 0.018 * sin(p.x * 5.0);
     const float dashboard = 1.0 - smoothstep(dashEdge - 0.006, dashEdge + 0.006, p.y);
@@ -160,31 +168,35 @@ float4 fragmentMain(VSOutput input) : SV_Target
         }
     }
 
-    // HUD reticle.
-    const float2 reticleCentre = float2(-cockpit.steer * 0.035, 0.07);
-    const float reticleRadius = length(p - reticleCentre);
-    const float ring = 1.0 - smoothstep(0.0, 0.004, abs(reticleRadius - 0.078));
-    const float innerRing = 1.0 - smoothstep(0.0, 0.003, abs(reticleRadius - 0.031));
-    const float crossX = lineMask(p.x - reticleCentre.x, 0.0015) *
-                         step(0.055, abs(p.y - reticleCentre.y)) * step(abs(p.y - reticleCentre.y), 0.12);
-    const float crossY = lineMask(p.y - reticleCentre.y, 0.0015) *
-                         step(0.055, abs(p.x - reticleCentre.x)) * step(abs(p.x - reticleCentre.x), 0.12);
-    const float fireGlow = 0.6 + cockpit.firing * 0.8;
-    const float hud = ring + innerRing * 0.7 + crossX + crossY;
-    layer(rgb, alpha, accent * fireGlow, hud * 0.72);
-    layer(rgb, alpha, float3(1.0), smoothstep(0.008, 0.0, reticleRadius) * 0.9);
-
-    // Out-of-phase target brackets drift with steering.
-    const float bracket = sdRoundBox(p - float2(-0.34 - cockpit.steer * 0.06, 0.32),
-                                     float2(0.075, 0.050), 0.012);
-    layer(rgb, alpha, accent * 0.55, lineMask(bracket, 0.004));
-
     // Small status dots along the dash.
     for (int dot = 0; dot < 7; ++dot) {
         const float2 dotPoint = p - float2(-0.36 + float(dot) * 0.12, -0.93);
         const float dotMask = 1.0 - smoothstep(0.007, 0.012, length(dotPoint));
         const float pulse = 0.45 + 0.55 * sin(cockpit.time * 2.0 + float(dot) * 1.7);
         layer(rgb, alpha, accent * pulse, dotMask * 0.75);
+    }
+    }
+
+    if (cockpit.showHud > 0.5) {
+    const float2 hudP = p / max(cockpit.hudScale, 0.2);
+    // HUD reticle.
+    const float2 reticleCentre = float2(-cockpit.steer * 0.035, 0.07);
+    const float reticleRadius = length(hudP - reticleCentre);
+    const float ring = 1.0 - smoothstep(0.0, 0.004, abs(reticleRadius - 0.078));
+    const float innerRing = 1.0 - smoothstep(0.0, 0.003, abs(reticleRadius - 0.031));
+    const float crossX = lineMask(hudP.x - reticleCentre.x, 0.0015) *
+                         step(0.055, abs(hudP.y - reticleCentre.y)) * step(abs(hudP.y - reticleCentre.y), 0.12);
+    const float crossY = lineMask(hudP.y - reticleCentre.y, 0.0015) *
+                         step(0.055, abs(hudP.x - reticleCentre.x)) * step(abs(hudP.x - reticleCentre.x), 0.12);
+    const float fireGlow = 0.6 + cockpit.firing * 0.8;
+    const float hud = ring + innerRing * 0.7 + crossX + crossY;
+    layer(rgb, alpha, accent * fireGlow, hud * 0.72);
+    layer(rgb, alpha, float3(1.0), smoothstep(0.008, 0.0, reticleRadius) * 0.9);
+
+    // Out-of-phase target brackets drift with steering.
+    const float bracket = sdRoundBox(hudP - float2(-0.34 - cockpit.steer * 0.06, 0.32),
+                                     float2(0.075, 0.050), 0.012);
+    layer(rgb, alpha, accent * 0.55, lineMask(bracket, 0.004));
     }
 
     // Hyperspace: radial star streaks and a blue tunnel glow.

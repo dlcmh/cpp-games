@@ -20,21 +20,7 @@ struct alignas(16) ObjectUniforms {
     float params[4];
 };
 
-// Keep in sync with CockpitUniforms in Shaders/cockpit.slang.
-struct alignas(16) CockpitUniforms {
-    float resolution[2];
-    float time;
-    float phase;
-    float phaseTime;
-    float flash;
-    float jump;
-    float steer;
-    float firing;
-    float padding[3];
-};
-
 static_assert(sizeof(FrameUniforms) == 112, "FrameUniforms must match Slang");
 static_assert(sizeof(ObjectUniforms) == 96, "ObjectUniforms must match Slang");
-static_assert(sizeof(CockpitUniforms) == 48, "CockpitUniforms must match Slang");
 
 }  // namespace spacebattle
