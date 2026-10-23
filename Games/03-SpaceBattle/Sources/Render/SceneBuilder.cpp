@@ -35,6 +35,25 @@ void setCamera(RenderFrame& frame, Vec3 eye, Vec3 target, Vec3 up, float fovY = 
     frame.camera.fovYRadians = fovY;
 }
 
+// Points the camera so anchor projects to the given NDC position. The cockpit
+// reticle is at (ndcX, 0.07), so this is what keeps the exhaust port centred in
+// the HUD instead of approximately near it.
+void setCameraToNdc(RenderFrame& frame, Vec3 eye, Vec3 anchor, Vec3 up, float fovY, float ndcX,
+                    float ndcY) {
+    const float aspect = frame.pixelHeight > 0 ? static_cast<float>(frame.pixelWidth) /
+                                                     static_cast<float>(frame.pixelHeight)
+                                               : 1.777f;
+    const float f = 1.0f / std::tan(fovY * 0.5f);
+    const float tanX = ndcX * aspect / f;
+    const float tanY = ndcY / f;
+
+    const Vec3 toAnchor = normalize(anchor - eye);
+    const Vec3 right0 = normalize(cross(toAnchor, up));
+    const Vec3 up0 = normalize(cross(right0, toAnchor));
+    const Vec3 direction = normalize(toAnchor - right0 * tanX - up0 * tanY);
+    setCamera(frame, eye, eye + direction, up, fovY);
+}
+
 CameraBasis cameraBasis(const RenderFrame& frame) {
     const Vec3 forward = normalize(frame.camera.forward);
     const Vec3 right = normalize(cross(forward, frame.camera.up));
@@ -188,9 +207,12 @@ void buildTrench(const BattleState& state, RenderFrame& frame) {
     const float cameraZ = 20.0f - t * 40.0f;
     const Vec3 eye{state.steer * 1.9f + std::sin(t * 0.9f) * 0.55f,
                    0.25f + std::sin(t * 1.2f) * 0.08f, cameraZ};
-    const Vec3 target = eye + Vec3{-0.03f, -0.08f, -1.0f};
-
-    setCamera(frame, eye, target, {0.0f, 1.0f, 0.0f}, 1.08f);
+    const float aspect = frame.pixelHeight > 0 ? static_cast<float>(frame.pixelWidth) /
+                                                     static_cast<float>(frame.pixelHeight)
+                                               : 1.777f;
+    const float reticleX = -state.steer * cppgames::cockpit::kReticleSteerShift / aspect;
+    setCameraToNdc(frame, eye, {0.0f, -1.60f, -420.0f}, {0.0f, 1.0f, 0.0f}, 1.08f, reticleX,
+                   cppgames::cockpit::kReticleCenterY);
     addSky(frame);
     addPlanet(frame, {-100.0f, -55.0f, cameraZ - 360.0f}, 90.0f, state.elapsedSeconds * 0.02f);
 
@@ -198,25 +220,6 @@ void buildTrench(const BattleState& state, RenderFrame& frame) {
     trench.mesh = MeshId::Trench;
     trench.material = Material::Trench;
     addOpaque(frame, trench);
-
-    // Exhaust-port target at the end of the run.
-    DrawItem targetPort{};
-    targetPort.mesh = MeshId::Box;
-    targetPort.material = Material::Emissive;
-    targetPort.transform = translation({0.0f, -1.2f, -435.0f}) * scaling({2.2f, 0.16f, 1.4f});
-    targetPort.color = {0.25f, 1.0f, 0.45f};
-    addOpaque(frame, targetPort);
-
-    // Two towers guarding the port.
-    for (int side = -1; side <= 1; side += 2) {
-        DrawItem tower{};
-        tower.mesh = MeshId::Box;
-        tower.material = Material::Lit;
-        tower.transform = translation({static_cast<float>(side) * 3.3f, 0.2f, -427.0f}) *
-                          scaling({0.5f, 3.3f, 0.5f});
-        tower.color = {0.32f, 0.35f, 0.38f};
-        addOpaque(frame, tower);
-    }
 
     // TIE fighters weave above the trench.
     for (int index = 0; index < 2; ++index) {
@@ -241,6 +244,26 @@ void buildTrench(const BattleState& state, RenderFrame& frame) {
         const float side = (index % 2 == 0) ? -1.0f : 1.0f;
         addBeam(frame, {side * 4.6f, 1.0f, z}, {side * -4.6f, 1.0f, z - 16.0f}, 0.06f,
                 {1.0f, 0.25f, 0.15f}, 0.8f, 0);
+    }
+
+    // Exhaust port on the trench centreline. The camera is aimed so this exact
+    // point projects to the HUD reticle.
+    DrawItem port{};
+    port.mesh = MeshId::Sphere;
+    port.material = Material::Emissive;
+    port.transform = translation({0.0f, -1.60f, -420.0f}) * scaling(3.0f);
+    port.color = {0.30f, 1.0f, 0.50f};
+    addOpaque(frame, port);
+
+    // Two towers guarding the port.
+    for (int side = -1; side <= 1; side += 2) {
+        DrawItem tower{};
+        tower.mesh = MeshId::Box;
+        tower.material = Material::Lit;
+        tower.transform = translation({static_cast<float>(side) * 3.3f, 0.2f, -427.0f}) *
+                          scaling({0.5f, 3.3f, 0.5f});
+        tower.color = {0.32f, 0.35f, 0.38f};
+        addOpaque(frame, tower);
     }
 
     // Torpedo shot in the final approach to the port.
